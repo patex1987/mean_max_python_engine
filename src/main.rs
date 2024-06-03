@@ -335,6 +335,87 @@ impl fmt::Display for Wreck {
 
 // ------------------
 
+#[derive(Debug)]
+struct TarPool {
+    unit: Unit,
+}
+
+impl TarPool {
+    fn new(
+        unit_id: i32,
+        unit_type: i32,
+        player_id: i32,
+        mass: f64,
+        radius: i32,
+        x: i32,
+        y: i32,
+        vx: i32,
+        vy: i32,
+    ) -> TarPool {
+        let inner_unit = Unit::new(unit_id, unit_type, player_id, mass, radius, x, y, vx, vy);
+        TarPool {
+            unit: inner_unit,
+        }
+    }
+}
+
+impl fmt::Display for TarPool {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "TarPool(id={}, mass={}, radius={}, coordinate={}, speed={})",
+            self.unit.unit_id,
+            self.unit.mass,
+            self.unit.radius,
+            self.unit.coordinate,
+            self.unit.speed,
+        )
+    }
+}
+
+// ------------------
+
+struct OilPool {
+    unit: Unit,
+}
+
+impl OilPool {
+    fn new(
+        unit_id: XXX,
+        unit_type: i32,
+        player_id: XXX,
+        mass: f64,
+        radius: i32,
+        x: i32,
+        y: i32,
+        vx: i32,
+        vy: i32,
+    ) -> OilPool {
+        let inner_unit = Unit::new(unit_id, unit_type, player_id, mass, radius, x, y, vx, vy);
+        OilPool {
+            unit: inner_unit,
+        }
+    }
+}
+
+impl fmt::Display for OilPool { 
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "OilPool(id={}, mass={}, radius={}, coordinate={}, speed={})",
+            self.unit.unit_id,
+            self.unit.mass,
+            self.unit.radius,
+            self.unit.coordinate,
+            self.unit.speed,
+        )
+    }
+}
+
+// ------------------
+
+
+
 fn find_doof_target(player_doof_ref: Option<&Doof>, destoyers: Vec<&Destroyer>) -> Coordinate {
     // let closest_destroyer_index = destoyers
     //     .iter()
@@ -381,6 +462,8 @@ fn find_doof_target(player_doof_ref: Option<&Doof>, destoyers: Vec<&Destroyer>) 
     )
 }
 
+
+/// prints the action for destroyer at the end of the round
 fn destroyer_decider(
     my_rage: &i32,
     chosen_tanker: &Coordinate,
