@@ -53,6 +53,10 @@ impl SpeedVector {
     fn new(vx: i32, vy: i32) -> SpeedVector {
         SpeedVector { vx: vx, vy: vy }
     }
+
+    fn absolute_speed(&self) -> f64 {
+        (((self.vx).pow(2) + (self.vy).pow(2)) as f64).sqrt()
+    }
 }
 
 impl fmt::Display for SpeedVector {
@@ -106,6 +110,11 @@ impl Unit {
 
 // ------------------
 
+///
+/// Possible actions:
+/// - harvest water from wrecks
+/// - create tar pools - increase mass and make tankers indestructible
+///
 #[derive(Debug)]
 struct Reaper {
     unit: Unit,
@@ -148,6 +157,11 @@ impl fmt::Display for Reaper {
 
 // ------------------
 
+///
+/// Potential actions:
+/// - destroy tankers (to create wrecks)
+/// - throw nitro grenade (to push looters in a radius of 1000)
+///
 #[derive(Debug)]
 struct Destroyer {
     unit: Unit,
@@ -190,6 +204,12 @@ impl fmt::Display for Destroyer {
 
 // ------------------
 
+///
+/// Generates rage proportional to its speed
+///
+/// Potential actions
+/// - creates oil pools (removes friction and prevents harvesting of wrecks)
+///
 #[derive(Debug)]
 struct Doof {
     unit: Unit,
@@ -353,9 +373,7 @@ impl TarPool {
         vy: i32,
     ) -> TarPool {
         let inner_unit = Unit::new(unit_id, unit_type, player_id, mass, radius, x, y, vx, vy);
-        TarPool {
-            unit: inner_unit,
-        }
+        TarPool { unit: inner_unit }
     }
 }
 
@@ -381,9 +399,9 @@ struct OilPool {
 
 impl OilPool {
     fn new(
-        unit_id: XXX,
+        unit_id: i32,
         unit_type: i32,
-        player_id: XXX,
+        player_id: i32,
         mass: f64,
         radius: i32,
         x: i32,
@@ -392,13 +410,11 @@ impl OilPool {
         vy: i32,
     ) -> OilPool {
         let inner_unit = Unit::new(unit_id, unit_type, player_id, mass, radius, x, y, vx, vy);
-        OilPool {
-            unit: inner_unit,
-        }
+        OilPool { unit: inner_unit }
     }
 }
 
-impl fmt::Display for OilPool { 
+impl fmt::Display for OilPool {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -413,8 +429,6 @@ impl fmt::Display for OilPool {
 }
 
 // ------------------
-
-
 
 fn find_doof_target(player_doof_ref: Option<&Doof>, destoyers: Vec<&Destroyer>) -> Coordinate {
     // let closest_destroyer_index = destoyers
@@ -461,7 +475,6 @@ fn find_doof_target(player_doof_ref: Option<&Doof>, destoyers: Vec<&Destroyer>) 
         destoyers[fartest_destroyer_index].unit.coordinate.y,
     )
 }
-
 
 /// prints the action for destroyer at the end of the round
 fn destroyer_decider(
@@ -542,11 +555,11 @@ fn destroyer_decider(
  * the standard input according to the problem statement.
  **/
 fn main() {
-    let mut previous_chosen_value: Option<Coordinate> = None;
-    let mut previous_chosen_tanker: Option<Coordinate> = None;
+    let mut round_nr = 0;
 
     // game loop
     loop {
+        round_nr += 1;
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let my_score = parse_input!(input_line, i32);
@@ -574,6 +587,8 @@ fn main() {
         let mut doofs: Vec<Doof> = vec![];
         let mut tankers: Vec<Tanker> = vec![];
         let mut wrecks: Vec<Wreck> = vec![];
+        let mut tar_pools: Vec<TarPool> = vec![];
+        let mut oil_pools: Vec<OilPool> = vec![];
 
         let mut my_reaper: Option<Reaper> = None;
         let mut my_doof: Option<Doof> = None;
@@ -647,47 +662,25 @@ fn main() {
                         unit_id, unit_type, player, mass, radius, x, y, vx, vy, extra, extra_2,
                     );
                     tankers.push(current_tanker);
-                    if extra_2 > max_tanker_water && extra_2 > 3 {
-                        max_tanker_water = extra_2;
-                        (max_tanker_water_x, max_tanker_water_y) = (x, y);
-                    }
                 }
                 4 => {
                     let current_wreck = Wreck::new(
                         unit_id, unit_type, player, mass, radius, x, y, vx, vy, extra,
                     );
                     wrecks.push(current_wreck);
-                    if extra > 0 {
-                        wreck_coordinates.push(Coordinate::new(x, y));
-                        if extra > max_water {
-                            max_water = extra;
-                            (max_water_x, max_water_y) = (x, y);
-                        }
-                    }
+                }
+                5 => {
+                    let tar_pool =
+                        TarPool::new(unit_id, unit_type, player, mass, radius, x, y, vx, vy);
+                    tar_pools.push(tar_pool);
+                }
+                6 => {
+                    let oil_pool =
+                        OilPool::new(unit_id, unit_type, player, mass, radius, x, y, vx, vy);
+                    oil_pools.push(oil_pool);
                 }
                 _ => (),
             };
-        }
-
-        if let Some(previous_chosen_value_ref) = previous_chosen_value.as_ref() {
-            if !wreck_coordinates.contains(&previous_chosen_value_ref) {
-                previous_chosen_value = Some(Coordinate::new(max_water_x, max_water_y));
-            }
-        } else {
-            previous_chosen_value = Some(Coordinate::new(max_water_x, max_water_y));
-        }
-
-        match previous_chosen_tanker.as_ref() {
-            Some(previous_chosen_tanker_ref) => {
-                if !tanker_coordinates.contains(&previous_chosen_tanker_ref) {
-                    previous_chosen_tanker =
-                        Some(Coordinate::new(max_tanker_water_x, max_tanker_water_y))
-                }
-            }
-            None => {
-                previous_chosen_tanker =
-                    Some(Coordinate::new(max_tanker_water_x, max_tanker_water_y));
-            }
         }
 
         // eprintln!("Wreck positions: {:?}", wreck_coordinates);
@@ -701,19 +694,33 @@ fn main() {
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        chosen_wreck = previous_chosen_value.as_ref().expect("not able to extract");
-        chosen_tanker = previous_chosen_tanker
-            .as_ref()
-            .expect("not able to extract");
 
         let doof_target: Coordinate =
             find_doof_target(my_doof.as_ref(), destroyers.iter().skip(1).collect());
         // Reaper
+
         let my_reaper_speed = &my_reaper.as_ref().expect("No Reaper").unit.speed;
         let selected_x = (chosen_wreck.x as f64 - (my_reaper_speed.vx as f64 * 1.5)) as i32;
         let selected_y = (chosen_wreck.y as f64 - (my_reaper_speed.vy as f64 * 1.5)) as i32;
 
-        println!("{} {} 200 Reaper", selected_x, selected_y);
+        eprintln!(
+            "Round: {}, speed: {} - i.e. {}, position: {}, ({}, {})",
+            round_nr,
+            my_reaper_speed,
+            my_reaper_speed.absolute_speed(),
+            my_reaper.as_ref().expect("No Reaper").unit.coordinate,
+            selected_x,
+            selected_y
+        );
+
+        if round_nr < 3 {
+            println!("{} {} 200 Reaper", selected_x, selected_y);
+        }
+        else {
+            // println!("{} {} 0 Reaper", selected_x, selected_y);
+            println!("{} {} 0 Reaper", -my_reaper_speed.vx, -my_reaper_speed.vy);
+        }
+        
         // Destroyer
         destroyer_decider(
             &my_rage,
