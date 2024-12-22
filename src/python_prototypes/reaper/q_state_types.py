@@ -3,52 +3,6 @@ this module contains classes and functions related to represent and
 initialize the q state of the game decision learning
 """
 
-def get_default_water_relations() -> dict[tuple[str, str], int]:
-    water_reaper_relation = {
-        ('close', 'safe'): 0,
-        ('close', 'risky'): 0,
-        ('close', 'dangerous'): 0,
-        ('medium', 'safe'): 0,
-        ('medium', 'risky'): 0,
-        ('medium', 'dangerous'): 0,
-        ('far', 'safe'): 0,
-        ('far', 'risky'): 0,
-        ('far', 'dangerous'): 0,
-    }
-    return water_reaper_relation
-
-
-def get_default_tanker_enemies_relation():
-    tanker_enemies_relation = {
-        ('close', 'safe'): 0,
-        ('close', 'risky'): 0,
-        ('close', 'dangerous'): 0,
-        ('medium', 'safe'): 0,
-        ('medium', 'risky'): 0,
-        ('medium', 'dangerous'): 0,
-        ('far', 'safe'): 0,
-        ('far', 'risky'): 0,
-        ('far', 'dangerous'): 0,
-    }
-    return tanker_enemies_relation
-
-
-def get_default_enemies_relation() -> dict[tuple[str, str], int]:
-    enemies_relation = {
-        ('close', 'close'): 0,
-        ('close', 'medium'): 0,
-        ('medium', 'close'): 0,
-        ('medium', 'medium'): 0,
-        ('far', 'close'): 0,
-        ('far', 'medium'): 0,
-    }
-    return enemies_relation
-
-
-def convert_relation_to_tuple_key(relation: dict[tuple[str, str], int]) -> tuple:
-    tuple_key = tuple((k[0], k[1], v) for k, v in relation.items())
-    return tuple_key
-
 
 class ReaperQState:
     """
@@ -106,7 +60,49 @@ class ReaperActionsQWeights:
         return sorted_weights
 
 
-def get_default_reaper_actions_q_weights():
+def get_default_water_relations() -> dict[tuple[str, str], int]:
+    water_reaper_relation = {
+        ('close', 'safe'): 0,
+        ('close', 'risky'): 0,
+        ('close', 'dangerous'): 0,
+        ('medium', 'safe'): 0,
+        ('medium', 'risky'): 0,
+        ('medium', 'dangerous'): 0,
+        ('far', 'safe'): 0,
+        ('far', 'risky'): 0,
+        ('far', 'dangerous'): 0,
+    }
+    return water_reaper_relation
+
+
+def get_default_tanker_enemies_relation():
+    tanker_enemies_relation = {
+        ('close', 'safe'): 0,
+        ('close', 'risky'): 0,
+        ('close', 'dangerous'): 0,
+        ('medium', 'safe'): 0,
+        ('medium', 'risky'): 0,
+        ('medium', 'dangerous'): 0,
+        ('far', 'safe'): 0,
+        ('far', 'risky'): 0,
+        ('far', 'dangerous'): 0,
+    }
+    return tanker_enemies_relation
+
+
+def get_default_enemies_relation() -> dict[tuple[str, str], int]:
+    enemies_relation = {
+        ('close', 'close'): 0,
+        ('close', 'medium'): 0,
+        ('medium', 'close'): 0,
+        ('medium', 'medium'): 0,
+        ('far', 'close'): 0,
+        ('far', 'medium'): 0,
+    }
+    return enemies_relation
+
+
+def get_default_reaper_actions_q_weights() -> dict[str, float]:
     reaper_actions_q_weights = {
         'harvest_safe': 0.0,
         'harvest_risky': 0.0,
@@ -121,3 +117,8 @@ def get_default_reaper_actions_q_weights():
         'wait': 0.0,
     }
     return reaper_actions_q_weights
+
+
+def convert_relation_to_tuple_key(relation: dict[tuple[str, str], int]) -> tuple:
+    tuple_key = tuple((k[0], k[1], v) for k, v in relation.items())
+    return tuple_key

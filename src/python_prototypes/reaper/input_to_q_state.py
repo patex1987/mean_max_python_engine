@@ -12,7 +12,7 @@ from python_prototypes.q_categorizer import (
     WaterRiskCategories,
     WATER_RISK_CATEGORY_RETRIEVER,
 )
-from python_prototypes.q_state_types import (
+from python_prototypes.reaper.q_state_types import (
     ReaperQState,
     get_default_enemies_relation,
     get_default_tanker_enemies_relation,
