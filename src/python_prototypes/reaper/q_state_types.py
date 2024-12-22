@@ -120,5 +120,7 @@ def get_default_reaper_actions_q_weights() -> dict[str, float]:
 
 
 def convert_relation_to_tuple_key(relation: dict[tuple[str, str], int]) -> tuple:
-    tuple_key = tuple((k[0], k[1], v) for k, v in relation.items())
+    tuple_key = tuple(
+        (k[0], k[1], v) for k, v in relation.items()
+    )
     return tuple_key

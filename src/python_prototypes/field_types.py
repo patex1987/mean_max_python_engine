@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-from python_prototypes.destroyer_simulation import GRID_COORD_UNIT_STATE_T
-
 
 class Entity(Enum):
     """
@@ -64,6 +62,9 @@ class GridUnitState:
         self.unit = unit
 
 
+GRID_COORD_UNIT_STATE_T = dict[tuple[int, int], list[GridUnitState]]
+
+
 @dataclass
 class GameGridInformation:
     """
@@ -90,3 +91,5 @@ class PlayerState:
     doof_state: GridUnitState
     rage: int
     score: int
+
+

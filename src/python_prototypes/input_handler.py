@@ -8,9 +8,8 @@ that emulates a "real" game input
 from collections import defaultdict
 from typing import Any
 
-from python_prototypes.destroyer_simulation import GRID_COORD_UNIT_STATE_T
 from python_prototypes.field_types import Unit, GridUnitState, Entity, PlayerFieldTypes, GameGridInformation, \
-    PlayerState
+    PlayerState, GRID_COORD_UNIT_STATE_T
 from python_prototypes.field_tools import get_grid_position
 from python_prototypes.reaper.decision_maker import reaper_decider
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
@@ -137,7 +136,9 @@ def original_game_main():
         )
         next_step = reaper_decider(
             reaper_game_state=reaper_game_state,
-            reaper_q_state=reaper_q_state
+            reaper_q_state=reaper_q_state,
+            game_grid_information=game_grid_information,
+            player_state=player_state
         )
         print("WAIT")
         print("WAIT")

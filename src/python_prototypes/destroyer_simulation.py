@@ -6,10 +6,8 @@ from enum import Enum
 from typing import Optional
 
 from python_prototypes.field_tools import get_grid_position, get_manhattan_distance, get_euclidean_distance
-from python_prototypes.field_types import Entity, Unit, GridUnitState
+from python_prototypes.field_types import Entity, Unit, GridUnitState, GRID_COORD_UNIT_STATE_T
 from python_prototypes.throttle_optimization import genetic_algorithm, FITNESS_SCORE_TYPE
-
-GRID_COORD_UNIT_STATE_T = dict[tuple[int, int], list[GridUnitState]]
 
 
 def get_next_destroyer_state(

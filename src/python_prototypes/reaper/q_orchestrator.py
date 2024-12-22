@@ -5,11 +5,23 @@ learning
 
 import random
 
-from python_prototypes.field_types import GridUnitState
+from python_prototypes.field_types import GridUnitState, GameGridInformation
 from python_prototypes.reaper.goal_possibility_determiner import get_goal_possibility_determiner
+from python_prototypes.reaper.q_state_types import (
+    ReaperQState,
+    get_default_reaper_actions_q_weights,
+    ReaperActionsQWeights,
+    get_default_water_relations,
+    get_default_enemies_relation,
+)
 from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner
 from python_prototypes.reaper.target_reached_determiner import get_goal_reached_determiner
 from python_prototypes.reaper.target_tracker_determiner import get_target_tracker
+
+
+def get_target_selector(reaper_goal_type: str, game_grid_information: GameGridInformation):
+
+    pass
 
 
 class ReaperGameState:
@@ -30,8 +42,8 @@ class ReaperGameState:
     def is_on_mission(self):
         return self._mission_set
 
-    def initialize_new_goal_type(self) -> str:
-        new_goal = self.get_new_goal_type()
+    def initialize_new_goal_type(self, reaper_q_state: ReaperQState) -> str:
+        new_goal = self.get_new_goal_type(reaper_q_state)
         self.set_and_initialize_goal_type(new_goal)
         return new_goal
 
@@ -45,18 +57,24 @@ class ReaperGameState:
 
         self._current_target_entity = updated_grid_state.unit.unit_type
 
-    def get_new_goal_type(self) -> str:
+    def get_new_goal_type(self, reaper_q_state: ReaperQState) -> str:
+        q_state_key = reaper_q_state.get_state_tuple_key()
+        reaper_q_action_weights = self._q_table.setdefault(
+            q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+        )
+
         exploration_rate = random.uniform(0, 1)
         if exploration_rate < self.exploration_rate:
-            return random.choice(self._reaper_q_actions.inner_weigths_dict.keys())
+            possible_keys = list(reaper_q_action_weights.inner_weigths_dict.keys())
+            return random.choice(possible_keys)
 
-        sorted_actions = self._reaper_q_actions.get_sorted_weights()
-        for goal, weight in sorted_actions:
-            is_available = self.is_goal_possible(goal)
+        sorted_actions = reaper_q_action_weights.get_sorted_weights()
+        for goal_type, weight in sorted_actions:
+            is_available = self.is_goal_possible(reaper_q_state, goal_type)
             if not is_available:
                 continue
 
-            return goal
+            return goal_type
 
         return 'wait'
 
@@ -77,12 +95,12 @@ class ReaperGameState:
         for state_step in self._current_mission_steps:
             self._reaper_q_actions.inner_weigths_dict[state_step] -= failure_penalty
 
-    def is_goal_possible(self, goal_type) -> bool:
+    def is_goal_possible(self, reaper_q_state: ReaperQState, goal_type: str) -> bool:
         """
         TODO: the availability determiner apprach is just one way to achieve this
         """
         goal_possibility_determiner = get_goal_possibility_determiner(goal_type)
-        is_possible = goal_possibility_determiner(self._reaper_q_state)
+        is_possible = goal_possibility_determiner(reaper_q_state)
         return is_possible
 
     def is_goal_target_available(self) -> bool:
@@ -101,10 +119,10 @@ class ReaperGameState:
         is_reached = reachability_determiner(self._reaper_q_state)
         return is_reached
 
-    def initialize_new_target(self, reaper_goal_type: str):
+    def initialize_new_target(self, reaper_goal_type: str, game_grid_information: GameGridInformation):
         target_tracker = get_target_tracker(reaper_goal_type)
         self._target_tracker = target_tracker
-        target_selector = get_target_selector(reaper_goal_type)
+        target_selector = get_target_selector(reaper_goal_type, game_grid_information)
         target = target_selector.select(reaper_goal_type)
         self._current_target_entity = target
         self._target_tracker.track(player_reaper_unit=player_reaper_unit, target_entity=target)
@@ -127,3 +145,21 @@ def get_goal_success_reward(current_goal: str) -> float:
     :return:
     """
     return -1.0
+
+
+class TestReaperGameStateInitializeNewTarget:
+    def test_initialize_new_target(self):
+        reaper_q_state = ReaperQState(
+            water_reaper_relation=get_default_water_relations(),
+            water_other_relation=get_default_water_relations(),
+            tanker_enemy_relation=get_default_enemies_relation(),
+            player_reaper_relation=get_default_enemies_relation(),
+            player_other_relation=get_default_enemies_relation(),
+            super_power_available=False,
+        )
+        reaper_game_state = ReaperGameState()
+        reaper_game_state.initialize_new_goal_type(reaper_q_state)
+        reaper_game_state.initialize_new_target(reaper_game_state.current_goal_type)
+        assert reaper_game_state._current_target_entity is not None
+        assert reaper_game_state._target_tracker is not None
+        assert reaper_game_state._target_tracker.steps_taken == 0

@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import Callable, Any
 
-from python_prototypes.destroyer_simulation import GRID_COORD_UNIT_STATE_T
-from python_prototypes.field_types import GridUnitState
+from python_prototypes.field_types import GridUnitState, GRID_COORD_UNIT_STATE_T
 
 
 class TargetAvailabilityState(Enum):

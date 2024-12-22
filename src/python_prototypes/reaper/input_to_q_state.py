@@ -253,6 +253,7 @@ def get_water_enemy_relations(
         )
 
         water_reaper_relation[(distance_category.name, closest_enemy_reaper_category)] = 1
+        wreck_positions[(distance_category.name, closest_enemy_reaper_category)].append(wreck_id)
 
     return water_reaper_relation
 
