@@ -1,10 +1,191 @@
+
+
 import math
 import random
 from enum import Enum
 from typing import Optional
 
-from field_tools import Entity, get_grid_position, GridUnitState, get_manhattan_distance, Unit, get_euclidean_distance
-from throttle_optimization import genetic_algorithm
+from python_prototypes.field_tools import get_grid_position, get_manhattan_distance, get_euclidean_distance
+from python_prototypes.field_types import Entity, Unit, GridUnitState
+from python_prototypes.throttle_optimization import genetic_algorithm, FITNESS_SCORE_TYPE
+
+GRID_COORD_UNIT_STATE_T = dict[tuple[int, int], list[GridUnitState]]
+
+
+def get_next_destroyer_state(
+    current_destroyer_state: 'DestroyerState',
+    rage_state: int,
+    full_grid_state: GRID_COORD_UNIT_STATE_T,
+    enemy_grid_state: GRID_COORD_UNIT_STATE_T,
+    tanker_grid_positions: list[GridUnitState],
+    tanker_grid_water_summary: dict[tuple[int, int], int],
+) -> str:
+    """
+    Selects a tanker object to aim for using the selection weights
+    if a valid tanker is selected, calculates the throttle sequences
+    to reach it. Constructs the movement string for the first step in
+    the throttle sequence and returns it as the next step
+
+    :param current_destroyer_state:
+    :param rage_state:
+    :param full_grid_state:
+    :param enemy_grid_state:
+    :param tanker_grid_positions:
+    :param tanker_grid_water_summary:
+    :return:
+
+    TODO: incorporate tar and oil into the logic
+    TODO: currently returns a string, but it needs to return the new state as well (try to avoid mutations)
+    """
+    current_position = Coordinate(current_destroyer_state.x, current_destroyer_state.y)
+    current_grid = get_grid_position(coordinate=(current_destroyer_state.x, current_destroyer_state.y))
+    in_a_tar_pool = is_in_tar_pool(current_position)
+    in_an_oil_spill = is_in_oil_spill(current_position)
+    nitro_grenade_available = is_nitro_grenade_available(current_destroyer_state, rage_state)
+
+    target_tanker_type = select_tanker_target_type(PLAYER_TANKER_SELECTION_WEIGHTS)
+    target_tanker_grid_position = find_tanker_target(
+        current_grid, enemy_grid_state, tanker_grid_water_summary, target_tanker_type
+    )
+
+    target_object = get_tanker_object_from_grid(full_grid_state, target_tanker_grid_position)
+    fastest_throttles_to_target = None
+    best_throttles_to_target = None
+    next_step = get_next_step(
+        PLAYER_DESTROYER_DECISION_WEIGHTS,
+        fastest_path_available=False,
+        best_path_available=False,
+        skill_available=nitro_grenade_available,
+    )
+    if not target_object:
+        if next_step == DestroyerDecisionResult.SKILL:
+            raise ValueError('Skill is not supported without a target object')
+        wait_string = 'WAIT'
+        return wait_string
+
+    v0 = math.sqrt(current_destroyer_state.vx**2 + current_destroyer_state.vy**2)
+    target_distance = get_euclidean_distance(
+        (current_destroyer_state.x, current_destroyer_state.y), (target_object.unit.x, target_object.unit.y)
+    )
+
+    next_step = get_next_step(
+        PLAYER_DESTROYER_DECISION_WEIGHTS,
+        fastest_path_available=True,
+        best_path_available=True,
+        skill_available=nitro_grenade_available,
+    )
+    throttle_sequence = get_throttle_sequence_for_next_step(
+        current_destroyer_state, next_step, target_distance, v0
+    )
+    next_move_command_string = get_next_move_string(
+        next_step, target_object, throttle_sequence
+    )
+    return next_move_command_string
+
+
+def get_throttle_sequence_for_next_step(
+    current_destroyer_state, next_step, target_distance, v0
+) -> Optional[tuple[Optional[list[int]], Optional[FITNESS_SCORE_TYPE]]]:
+    if next_step == DestroyerDecisionResult.FASTEST_PATH:
+        # this is counting with a straight line to the goal
+        # TODO: move the genetic algorithm configs to a dedicated class
+        throttle_sequence = genetic_algorithm(
+            v0,
+            current_destroyer_state.mass,
+            current_destroyer_state.friction,
+            target_distance,
+            v_threshold=5,
+            max_t=50,
+            throttle_range=(0, 300),
+            pop_size=1000,
+            num_generations=100,
+            mutation_rate=0.1,
+            num_best_parents=20,
+            num_worst_parents=10,
+            distance_weigth=1,
+            speed_weight=0.001,
+            length_weight=0.001,
+            nonzero_weight=0.001,
+            timeout_ms=300,
+        )
+        return throttle_sequence
+    if next_step == DestroyerDecisionResult.BEST_PATH:
+        throttle_sequence = genetic_algorithm(
+            v0,
+            current_destroyer_state.mass,
+            current_destroyer_state.friction,
+            target_distance,
+            v_threshold=3,
+            max_t=50,
+            throttle_range=(0, 300),
+            pop_size=100,
+            num_generations=100,
+            mutation_rate=0.1,
+            num_best_parents=20,
+            num_worst_parents=10,
+            distance_weigth=0.5,
+            speed_weight=0.6,
+            length_weight=0.3,
+            nonzero_weight=0.3,
+            timeout_ms=300,
+        )
+        return throttle_sequence
+    return None
+
+
+def find_tanker_target(
+    current_grid, enemy_grid_state, tanker_grid_water_summary, target_tanker_type
+) -> tuple[int, int]:
+    """
+    finds the grid position of the target tanker
+
+    :param current_grid:
+    :param enemy_grid_state:
+    :param tanker_grid_water_summary:
+    :param target_tanker_type:
+    :return:
+    """
+    match target_tanker_type:
+        case TankerTargetType.HIGH_REWARD:
+            target_tanker_grid_position = get_high_reward_tanker_grid(tanker_grid_water_summary)
+        case TankerTargetType.OPTIMAL_REWARD:
+            target_tanker_grid_position = get_optimal_reward_tanker_grid(
+                current_grid, tanker_grid_water_summary, enemy_grid_state, PLAYER_OPTIMAL_TANKER_REWARD_WEIGHTS
+            )
+        case TankerTargetType.CLOSEST:
+            target_tanker_grid_position = get_optimal_reward_tanker_grid(
+                current_grid, tanker_grid_water_summary, enemy_grid_state, DISTANCE_TANKER_REWARD_WEIGHTS
+            )
+        case _:
+            raise ValueError('Invalid target tanker type')
+
+    return target_tanker_grid_position
+
+
+def get_next_move_string(
+    next_step: 'DestroyerDecisionResult',
+    target_object: GridUnitState,
+    throttle_sequence
+) -> str:
+    match next_step:
+        case DestroyerDecisionResult.FASTEST_PATH:
+            move_string = '{} {} {} Destroyer'.format(
+                target_object.unit.x, target_object.unit.y, throttle_sequence[0][0]
+            )
+            return move_string
+        case DestroyerDecisionResult.BEST_PATH:
+            move_string = '{} {} {} Destroyer'.format(
+                target_object.unit.x, target_object.unit.y, throttle_sequence[0][0]
+            )
+            return move_string
+        case DestroyerDecisionResult.SKILL:
+            skill_string = 'SKILL {} {} Destroyer'.format(target_object.unit.x, target_object.unit.y)
+            return skill_string
+        case DestroyerDecisionResult.WAIT:
+            wait_string = 'WAIT'
+            return wait_string
+        case _:
+            raise ValueError("Invalid decision result")
 
 
 class TankerSelectionWeights:
@@ -33,10 +214,12 @@ class DestroyerDecisionWeights:
 PLAYER_TANKER_SELECTION_WEIGHTS = TankerSelectionWeights(high_reward=0.1, optimal_reward=0.6, closest=0.3)
 PLAYER_DESTROYER_DECISION_WEIGHTS = DestroyerDecisionWeights(fastest_path=0.2, best_path=0.4, skill=0.3, wait=0.1)
 
+
 class TankerTargetType(Enum):
     HIGH_REWARD = 1
     OPTIMAL_REWARD = 2
     CLOSEST = 3
+
 
 def select_tanker_target_type(tanker_selection_weights) -> TankerTargetType:
     target_type = random.choices(
@@ -53,6 +236,7 @@ def select_tanker_target_type(tanker_selection_weights) -> TankerTargetType:
         k=1,
     )[0]
     return target_type
+
 
 def select_target_tanker(
     high_reward_tanker_grid_position,
@@ -115,9 +299,7 @@ def is_nitro_grenade_available(current_destroyer_state, rage_state):
     return False
 
 
-def get_high_reward_tanker_grid(
-    current_grid: dict[tuple[int, int], list[Entity]], tanker_grid_water_summary: dict[tuple[int, int], int]
-):
+def get_high_reward_tanker_grid(tanker_grid_water_summary: dict[tuple[int, int], int]):
     """ """
     return max(tanker_grid_water_summary, key=lambda x: tanker_grid_water_summary[x])
 
@@ -161,8 +343,11 @@ def get_neighboring_enemies(explored_grid, enemy_grid_state, enemy_types, depth)
 
 
 def get_optimal_reward_tanker_grid(
-    player_current_grid, tanker_grid_water_summary, enemy_grid_state, tanker_reward_weights: OptimalTankerRewardWeights
-):
+    player_current_grid,
+    tanker_grid_water_summary: dict[tuple[int, int], int],
+    enemy_grid_state,
+    tanker_reward_weights: OptimalTankerRewardWeights,
+) -> Optional[tuple[int, int]]:
     optimal_reward_tanker_position = None
     best_score = None
     for explored_grid, water_content in tanker_grid_water_summary.items():
@@ -190,7 +375,7 @@ def get_optimal_reward_tanker_grid(
             optimal_reward_tanker_position = explored_grid
 
     if optimal_reward_tanker_position is None:
-        return
+        return None
     return optimal_reward_tanker_position
 
 
@@ -241,121 +426,6 @@ def get_next_step(
     if choice == DestroyerDecisionResult.SKILL and not skill_available:
         choice = DestroyerDecisionResult.WAIT
     return choice
-
-
-def get_next_destroyer_state(
-    current_destroyer_state: DestroyerState,
-    rage_state: int,
-    full_grid_state: dict[tuple[int, int], list[GridUnitState]],
-    enemy_grid_state: dict[tuple[int, int], list[GridUnitState]],
-    tanker_grid_positions: list[GridUnitState],
-    tanker_grid_water_summary: dict[tuple[int, int], int],
-):
-    """
-    TODO: incorporate tar and oil into the logic
-    """
-    current_position = Coordinate(current_destroyer_state.x, current_destroyer_state.y)
-    current_grid = get_grid_position(coordinate=(current_destroyer_state.x, current_destroyer_state.y))
-    in_a_tar_pool = is_in_tar_pool(current_position)
-    in_an_oil_spill = is_in_oil_spill(current_position)
-    nitro_grenade_available = is_nitro_grenade_available(current_destroyer_state, rage_state)
-
-    target_tanker_type = select_tanker_target_type(PLAYER_TANKER_SELECTION_WEIGHTS)
-    target_tanker_grid_position = None
-    match target_tanker_type:
-        case TankerTargetType.HIGH_REWARD:
-            target_tanker_grid_position = get_high_reward_tanker_grid(current_grid, tanker_grid_water_summary)
-        case TankerTargetType.OPTIMAL_REWARD:
-            target_tanker_grid_position = get_optimal_reward_tanker_grid(
-                current_grid, tanker_grid_water_summary, enemy_grid_state, PLAYER_OPTIMAL_TANKER_REWARD_WEIGHTS
-            )
-        case TankerTargetType.CLOSEST:
-            target_tanker_grid_position = get_optimal_reward_tanker_grid(
-                current_grid, tanker_grid_water_summary, enemy_grid_state, DISTANCE_TANKER_REWARD_WEIGHTS
-            )
-
-    target_object = get_tanker_object_from_grid(full_grid_state, target_tanker_grid_position)
-    fastest_throttles_to_target = None
-    best_throttles_to_target = None
-    next_step = get_next_step(
-        PLAYER_DESTROYER_DECISION_WEIGHTS,
-        fastest_path_available=False,
-        best_path_available=False,
-        skill_available=nitro_grenade_available,
-    )
-    if target_object:
-        v0 = math.sqrt(current_destroyer_state.vx**2 + current_destroyer_state.vy**2)
-        target_distance = get_euclidean_distance(
-            (current_destroyer_state.x, current_destroyer_state.y), (target_object.unit.x, target_object.unit.y)
-        )
-
-        next_step = get_next_step(
-            PLAYER_DESTROYER_DECISION_WEIGHTS,
-            fastest_path_available=True,
-            best_path_available=True,
-            skill_available=nitro_grenade_available,
-        )
-        if next_step == DestroyerDecisionResult.FASTEST_PATH:
-            # this is counting with a straight line to the goal
-            # TODO: move the genetic algorithm configs to a dedicated class
-            fastest_throttles_to_target = genetic_algorithm(
-                v0,
-                current_destroyer_state.mass,
-                current_destroyer_state.friction,
-                target_distance,
-                v_threshold=5,
-                max_t=50,
-                throttle_range=(0, 300),
-                pop_size=1000,
-                num_generations=100,
-                mutation_rate=0.1,
-                num_best_parents=20,
-                num_worst_parents=10,
-                distance_weigth=1,
-                speed_weight=0.001,
-                length_weight=0.001,
-                nonzero_weight=0.001,
-                timeout_ms=300
-            )
-        elif next_step == DestroyerDecisionResult.BEST_PATH:
-            best_throttles_to_target = genetic_algorithm(
-                v0,
-                current_destroyer_state.mass,
-                current_destroyer_state.friction,
-                target_distance,
-                v_threshold=3,
-                max_t=50,
-                throttle_range=(0, 300),
-                pop_size=100,
-                num_generations=100,
-                mutation_rate=0.1,
-                num_best_parents=20,
-                num_worst_parents=10,
-                distance_weigth=0.5,
-                speed_weight=0.6,
-                length_weight=0.3,
-                nonzero_weight=0.3,
-                timeout_ms=300
-            )
-    match next_step:
-        case DestroyerDecisionResult.FASTEST_PATH:
-            move_string = '{} {} {} Destroyer'.format(
-                target_object.unit.x, target_object.unit.y, fastest_throttles_to_target[0][0]
-            )
-            return move_string
-        case DestroyerDecisionResult.BEST_PATH:
-            move_string = '{} {} {} Destroyer'.format(
-                target_object.unit.x, target_object.unit.y, best_throttles_to_target[0][0]
-            )
-            return move_string
-        case DestroyerDecisionResult.SKILL:
-            skill_string = 'SKILL {} {} Destroyer'.format(target_object.unit.x, target_object.unit.y)
-            return skill_string
-        case DestroyerDecisionResult.WAIT:
-            wait_string = 'WAIT'
-            return wait_string
-        case _:
-            raise ValueError("Invalid decision result")
 
 
 ### test ideas
