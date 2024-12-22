@@ -48,7 +48,6 @@ def water_target_available(
     :return:
 
     TODO: water is within wrecks
-    TODO: return custom type, as its not just a simple boolean
     """
     wreck_id = goal_target_obj.unit.unit_id
     wreck_coordinate = goal_target_obj.grid_coordinate
@@ -93,4 +92,4 @@ def super_power_target_available(
 def no_op_target_available(
     goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
 ) -> TargetAvailabilityState:
-    return True
+    return TargetAvailabilityState.valid
