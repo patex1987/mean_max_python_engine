@@ -20,9 +20,7 @@ from python_prototypes.reaper.q_state_types import (
 )
 
 
-def calculate_reaper_q_state(
-    game_grid_information: GameGridInformation, player_state: PlayerState
-) -> tuple[tuple, tuple, tuple, tuple, tuple, int]:
+def calculate_reaper_q_state(game_grid_information: GameGridInformation, player_state: PlayerState) -> ReaperQState:
     """
     Takes the game input and converts it into a reaper q state tuple
 
@@ -65,8 +63,7 @@ def calculate_reaper_q_state(
         player_other_relation=player_other_enemy_relation,
         super_power_available=is_super_power_available,
     )
-    state_key = state.get_state_tuple_key()
-    return state_key
+    return state
 
 
 def get_player_enemy_relation(

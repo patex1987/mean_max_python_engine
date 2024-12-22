@@ -12,7 +12,9 @@ from python_prototypes.destroyer_simulation import GRID_COORD_UNIT_STATE_T
 from python_prototypes.field_types import Unit, GridUnitState, Entity, PlayerFieldTypes, GameGridInformation, \
     PlayerState
 from python_prototypes.field_tools import get_grid_position
+from python_prototypes.reaper.decision_maker import reaper_decider
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
+from python_prototypes.reaper.q_orchestrator import ReaperGameState
 
 
 def original_game_main():
@@ -42,7 +44,7 @@ def original_game_main():
         player_reaper_grid_unit = None
         player_destroyer_grid_unit = None
         player_doof_grid_unit = None
-
+        reaper_game_state = ReaperGameState()
 
         for i in range(unit_count):
             inputs = input().split()
@@ -130,7 +132,13 @@ def original_game_main():
             score=my_score
         )
 
-        reaper_q_state = calculate_reaper_q_state(game_grid_information=game_grid_information, player_state=player_state)
+        reaper_q_state = calculate_reaper_q_state(
+            game_grid_information=game_grid_information, player_state=player_state
+        )
+        next_step = reaper_decider(
+            reaper_game_state=reaper_game_state,
+            reaper_q_state=reaper_q_state
+        )
         print("WAIT")
         print("WAIT")
         print("WAIT")

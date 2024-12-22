@@ -1,3 +1,5 @@
+from typing import Any
+
 from python_prototypes.reaper.q_orchestrator import ReaperGameState
 from python_prototypes.reaper.q_state_types import ReaperQState
 
