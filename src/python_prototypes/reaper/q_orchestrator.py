@@ -159,7 +159,7 @@ class TestReaperGameStateInitializeNewTarget:
         )
         reaper_game_state = ReaperGameState()
         reaper_game_state.initialize_new_goal_type(reaper_q_state)
-        reaper_game_state.initialize_new_target(reaper_game_state.current_goal_type)
+        reaper_game_state.initialize_new_target(reaper_game_state.current_goal_type, game_grid_information)
         assert reaper_game_state._current_target_entity is not None
         assert reaper_game_state._target_tracker is not None
         assert reaper_game_state._target_tracker.steps_taken == 0

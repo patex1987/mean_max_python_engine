@@ -40,75 +40,75 @@ def safe_water_possible(reaper_q_state: ReaperQState) -> bool:
     :return:
     """
     available = (
-        reaper_q_state.water_reaper_relation.get(('close', 'safe'), 0) > 0
-        or reaper_q_state.water_reaper_relation.get(('medium', 'safe'), 0) > 0
-        or reaper_q_state.water_reaper_relation.get(('far', 'safe'), 0) > 0
+        reaper_q_state.water_reaper_state.get(('close', 'safe'), 0) > 0
+        or reaper_q_state.water_reaper_state.get(('medium', 'safe'), 0) > 0
+        or reaper_q_state.water_reaper_state.get(('far', 'safe'), 0) > 0
     )
     return available
 
 
 def risky_water_possible(reaper_q_state: ReaperQState) -> bool:
     available = (
-        reaper_q_state.water_reaper_relation.get(('close', 'risky'), 0) > 0
-        or reaper_q_state.water_reaper_relation.get(('medium', 'risky'), 0) > 0
-        or reaper_q_state.water_reaper_relation.get(('far', 'risky'), 0) > 0
+        reaper_q_state.water_reaper_state.get(('close', 'risky'), 0) > 0
+        or reaper_q_state.water_reaper_state.get(('medium', 'risky'), 0) > 0
+        or reaper_q_state.water_reaper_state.get(('far', 'risky'), 0) > 0
     )
     return available
 
 
 def dangerous_water_possible(reaper_q_state: ReaperQState) -> bool:
     available = (
-        reaper_q_state.water_reaper_relation.get(('close', 'dangerous'), 0) > 0
-        or reaper_q_state.water_reaper_relation.get(('medium', 'dangerous'), 0) > 0
-        or reaper_q_state.water_reaper_relation.get(('far', 'dangerous'), 0) > 0
+        reaper_q_state.water_reaper_state.get(('close', 'dangerous'), 0) > 0
+        or reaper_q_state.water_reaper_state.get(('medium', 'dangerous'), 0) > 0
+        or reaper_q_state.water_reaper_state.get(('far', 'dangerous'), 0) > 0
     )
     return available
 
 
 def close_reaper_possible(reaper_q_state: ReaperQState) -> bool:
     available = (
-        reaper_q_state.player_reaper_relation.get(('close', 'close'), 0) > 0
-        or reaper_q_state.player_reaper_relation.get(('close', 'medium'), 0) > 0
+        reaper_q_state.player_reaper_state.get(('close', 'close'), 0) > 0
+        or reaper_q_state.player_reaper_state.get(('close', 'medium'), 0) > 0
     )
     return available
 
 
 def mid_reaper_possible(reaper_q_state: ReaperQState) -> bool:
     available = (
-        reaper_q_state.player_reaper_relation.get(('mid', 'close'), 0) > 0
-        or reaper_q_state.player_reaper_relation.get(('mid', 'medium'), 0) > 0
+        reaper_q_state.player_reaper_state.get(('mid', 'close'), 0) > 0
+        or reaper_q_state.player_reaper_state.get(('mid', 'medium'), 0) > 0
     )
     return available
 
 
 def far_reaper_possible(reaper_q_state: ReaperQState) -> bool:
     available = (
-        reaper_q_state.player_reaper_relation.get(('far', 'close'), 0) > 0
-        or reaper_q_state.player_reaper_relation.get(('far', 'medium'), 0) > 0
+        reaper_q_state.player_reaper_state.get(('far', 'close'), 0) > 0
+        or reaper_q_state.player_reaper_state.get(('far', 'medium'), 0) > 0
     )
     return available
 
 
 def close_other_enemy_possible(reaper_q_state: ReaperQState) -> bool:
     available = (
-        reaper_q_state.player_other_relation.get(('close', 'close'), 0) > 0
-        or reaper_q_state.player_other_relation.get(('close', 'medium'), 0) > 0
+        reaper_q_state.player_other_state.get(('close', 'close'), 0) > 0
+        or reaper_q_state.player_other_state.get(('close', 'medium'), 0) > 0
     )
     return available
 
 
 def mid_other_enemy_possible(reaper_q_state: ReaperQState) -> bool:
     available = (
-        reaper_q_state.player_other_relation.get(('mid', 'close'), 0) > 0
-        or reaper_q_state.player_other_relation.get(('mid', 'medium'), 0) > 0
+        reaper_q_state.player_other_state.get(('mid', 'close'), 0) > 0
+        or reaper_q_state.player_other_state.get(('mid', 'medium'), 0) > 0
     )
     return available
 
 
 def far_other_enemy_possible(reaper_q_state: ReaperQState) -> bool:
     available = (
-        reaper_q_state.player_other_relation.get(('far', 'close'), 0) > 0
-        or reaper_q_state.player_other_relation.get(('far', 'medium'), 0) > 0
+        reaper_q_state.player_other_state.get(('far', 'close'), 0) > 0
+        or reaper_q_state.player_other_state.get(('far', 'medium'), 0) > 0
     )
     return available
 

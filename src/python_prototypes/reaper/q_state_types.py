@@ -2,6 +2,7 @@
 this module contains classes and functions related to represent and
 initialize the q state of the game decision learning
 """
+from typing import Any
 
 
 class ReaperQState:
@@ -15,11 +16,11 @@ class ReaperQState:
 
     def __init__(
         self,
-        water_reaper_relation: dict[tuple[str, str], int],
-        water_other_relation: dict[tuple[str, str], int],
-        tanker_enemy_relation: dict[tuple[str, str], int],
-        player_reaper_relation: dict[tuple[str, str], int],
-        player_other_relation: dict[tuple[str, str], int],
+        water_reaper_relation: dict[tuple[str, str], list[Any]],
+        water_other_relation: dict[tuple[str, str], list[Any]],
+        tanker_enemy_relation: dict[tuple[str, str], list[Any]],
+        player_reaper_relation: dict[tuple[str, str], list[Any]],
+        player_other_relation: dict[tuple[str, str], list[Any]],
         super_power_available: bool,
     ):
         self.water_reaper_relation = water_reaper_relation
@@ -28,6 +29,11 @@ class ReaperQState:
         self.player_reaper_relation = player_reaper_relation
         self.player_other_relation = player_other_relation
         self.super_power_available = super_power_available
+        self.water_reaper_state = convert_to_state_dict(water_reaper_relation)
+        self.water_other_state = convert_to_state_dict(water_other_relation)
+        self.tanker_enemy_state = convert_to_state_dict(tanker_enemy_relation)
+        self.player_reaper_state = convert_to_state_dict(player_reaper_relation)
+        self.player_other_state = convert_to_state_dict(player_other_relation)
 
     def get_state_tuple_key(self):
         """
@@ -60,44 +66,44 @@ class ReaperActionsQWeights:
         return sorted_weights
 
 
-def get_default_water_relations() -> dict[tuple[str, str], int]:
+def get_default_water_relations() -> dict[tuple[str, str], list[Any]]:
     water_reaper_relation = {
-        ('close', 'safe'): 0,
-        ('close', 'risky'): 0,
-        ('close', 'dangerous'): 0,
-        ('medium', 'safe'): 0,
-        ('medium', 'risky'): 0,
-        ('medium', 'dangerous'): 0,
-        ('far', 'safe'): 0,
-        ('far', 'risky'): 0,
-        ('far', 'dangerous'): 0,
+        ('close', 'safe'): [],
+        ('close', 'risky'): [],
+        ('close', 'dangerous'): [],
+        ('medium', 'safe'): [],
+        ('medium', 'risky'): [],
+        ('medium', 'dangerous'): [],
+        ('far', 'safe'): [],
+        ('far', 'risky'): [],
+        ('far', 'dangerous'): [],
     }
     return water_reaper_relation
 
 
-def get_default_tanker_enemies_relation():
+def get_default_tanker_enemies_relation() -> dict[tuple[str, str], list[Any]]:
     tanker_enemies_relation = {
-        ('close', 'safe'): 0,
-        ('close', 'risky'): 0,
-        ('close', 'dangerous'): 0,
-        ('medium', 'safe'): 0,
-        ('medium', 'risky'): 0,
-        ('medium', 'dangerous'): 0,
-        ('far', 'safe'): 0,
-        ('far', 'risky'): 0,
-        ('far', 'dangerous'): 0,
+        ('close', 'safe'): [],
+        ('close', 'risky'): [],
+        ('close', 'dangerous'): [],
+        ('medium', 'safe'): [],
+        ('medium', 'risky'): [],
+        ('medium', 'dangerous'): [],
+        ('far', 'safe'): [],
+        ('far', 'risky'): [],
+        ('far', 'dangerous'): [],
     }
     return tanker_enemies_relation
 
 
-def get_default_enemies_relation() -> dict[tuple[str, str], int]:
+def get_default_enemies_relation() -> dict[tuple[str, str], list[Any]]:
     enemies_relation = {
-        ('close', 'close'): 0,
-        ('close', 'medium'): 0,
-        ('medium', 'close'): 0,
-        ('medium', 'medium'): 0,
-        ('far', 'close'): 0,
-        ('far', 'medium'): 0,
+        ('close', 'close'): [],
+        ('close', 'medium'): [],
+        ('medium', 'close'): [],
+        ('medium', 'medium'): [],
+        ('far', 'close'): [],
+        ('far', 'medium'): [],
     }
     return enemies_relation
 
@@ -119,8 +125,12 @@ def get_default_reaper_actions_q_weights() -> dict[str, float]:
     return reaper_actions_q_weights
 
 
-def convert_relation_to_tuple_key(relation: dict[tuple[str, str], int]) -> tuple:
+def convert_relation_to_tuple_key(relation: dict[tuple[str, str], list[Any]]) -> tuple:
     tuple_key = tuple(
-        (k[0], k[1], v) for k, v in relation.items()
+        (k[0], k[1], 1 if len(v)>0 else 0) for k, v in relation.items()
     )
     return tuple_key
+
+def convert_to_state_dict(relation: dict[tuple[str, str], list[Any]]) -> dict[tuple[str, str], int]:
+    state_dict = {state_key: 1 if len(coordinates)>0 else 0 for state_key, coordinates in relation.items()}
+    return state_dict
