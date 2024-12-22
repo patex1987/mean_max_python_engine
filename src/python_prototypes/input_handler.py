@@ -125,7 +125,9 @@ def original_game_main():
         player_state = PlayerState(
             reaper_state=player_reaper_grid_unit,
             destroyer_state=player_destroyer_grid_unit,
-            doof_state=player_doof_grid_unit
+            doof_state=player_doof_grid_unit,
+            rage=my_rage,
+            score=my_score
         )
 
         reaper_q_state = calculate_reaper_q_state(game_grid_information=game_grid_information, player_state=player_state)

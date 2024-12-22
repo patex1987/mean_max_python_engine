@@ -33,7 +33,7 @@ def get_default_tanker_enemies_relation():
     return tanker_enemies_relation
 
 
-def get_default_enemies_relation():
+def get_default_enemies_relation() -> dict[tuple[str, str], int]:
     enemies_relation = {
         ('close', 'close'): 0,
         ('close', 'medium'): 0,

@@ -88,3 +88,5 @@ class PlayerState:
     reaper_state: GridUnitState
     destroyer_state: GridUnitState
     doof_state: GridUnitState
+    rage: int
+    score: int
