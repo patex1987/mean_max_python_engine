@@ -9,6 +9,11 @@ from enum import Enum
 from python_prototypes.field_tools import SQUARE_COUNT
 
 
+class DistanceCategories(Enum):
+    close = 1
+    medium = 2
+    far = 3
+
 class DistanceCategoriesRetriever:
 
     def __init__(self, square_count):
@@ -17,13 +22,13 @@ class DistanceCategoriesRetriever:
         self.medium_limit = grid_squares // 15
         self.far = grid_squares
 
-    def get_category(self, manhattan_distance: int) -> str:
+    def get_category(self, manhattan_distance: int) -> DistanceCategories:
         if manhattan_distance <= self.close_limit:
-            return 'close'
+            return DistanceCategories.close
         if manhattan_distance <= self.medium_limit:
-            return 'medium'
+            return DistanceCategories.medium
 
-        return 'far'
+        return DistanceCategories.far
 
 
 class WaterRiskCategories(Enum):
