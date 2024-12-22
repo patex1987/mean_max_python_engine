@@ -12,7 +12,7 @@ from python_prototypes.destroyer_simulation import GRID_COORD_UNIT_STATE_T
 from python_prototypes.field_types import Unit, GridUnitState, Entity, PlayerFieldTypes, GameGridInformation, \
     PlayerState
 from python_prototypes.field_tools import get_grid_position
-from python_prototypes.q_orchestrator import calculate_reaper_q_state
+from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
 
 
 def original_game_main():
