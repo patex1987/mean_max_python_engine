@@ -1,9 +1,96 @@
+"""
+Module contains functions to optimize the throttle sequence to a reach a given goal
+Main entrypoint is the `genetic_algorithm` function
+"""
+
 import random
-from pprint import pprint
 
 import time
+from typing import Tuple, Optional
 
 TIMEOUT_1000_MS = 1000
+# TODO: create a custom type
+FITNESS_SCORE_TYPE = Tuple[float, float, float, int]
+
+
+def genetic_algorithm(
+    v0,
+    m,
+    f,
+    d_target,
+    v_threshold,
+    max_t=100,
+    throttle_range=(1, 100),
+    pop_size=100,
+    num_generations=100,
+    mutation_rate=0.1,
+    num_best_parents=20,
+    num_worst_parents=10,
+    distance_weigth=1.0,
+    speed_weight=0.5,
+    length_weight=0.01,
+    nonzero_weight=0.01,
+    timeout_ms=TIMEOUT_1000_MS,
+) -> tuple[Optional[list[int]], Optional[FITNESS_SCORE_TYPE]]:
+    """
+    Run the genetic algorithm to find the optimal variable-length throttle sequence.
+    TODO: replace the return type with a custom type
+    """
+    # Step 1: Initialize the population
+    population = generate_initial_population(pop_size, max_t, throttle_range)
+    start_time = time.monotonic_ns() / 1e6  # Start time in milliseconds
+
+    best_throttle_sequence = None
+    best_fitness = None
+
+    for generation in range(num_generations):
+        # Step 2: Calculate fitness for each individual in the population
+        fitness_scores = [
+            fitness(
+                v0, throttles, m, f, d_target, v_threshold, distance_weigth, speed_weight, length_weight, nonzero_weight
+            )
+            for throttles in population
+        ]
+
+        # Step 3: Select the best individuals as parents
+        best_parents = select_best_parents(population, fitness_scores, num_best_parents)
+        worst_parents = select_random_parents(population, fitness_scores, num_worst_parents)
+
+        all_parents = best_parents + worst_parents
+
+        # Step 4: Create the next generation through crossover
+        next_generation: list[list[int]] = []
+        while len(next_generation) < pop_size:
+            parent1, parent2 = random.sample(all_parents, 2)
+            child = crossover(parent1, parent2, max_t)
+            next_generation.append(child)
+
+        # Step 5: Apply mutation to the offspring
+        next_generation = [mutate(child, throttle_range, mutation_rate) for child in next_generation]
+
+        # Display progress
+        best_fitness = min(fitness_scores, key=lambda x: x[0])
+        best_throttle_sequence = population[fitness_scores.index(best_fitness)]
+        # print(
+        #     f"Generation {generation + 1}, "
+        #     f"best score: {best_fitness[0]:.02f}, distance_diff: {best_fitness[1]:.02f}, "
+        #     f"speed diff: {best_fitness[2]:.02f}, "
+        #     f"best sequence length: {best_fitness[3]} or {len(best_throttle_sequence)}"
+        # )
+        # print('[{}] {} -> {:.02f}'.format(generation + 1, best_throttle_sequence, best_fitness[0]))
+
+        # if best_fitness[1] <= 3 and best_fitness[2] <= 3:
+        #     print("Found a good enough solution!")
+        #     break
+        # Update the population
+        population = next_generation
+        actual_time = time.monotonic_ns() / 1e6  # Current time in milliseconds
+        if actual_time - start_time >= timeout_ms:
+            print("Timeout reached after {} generations".format(generation + 1))
+            return best_throttle_sequence, best_fitness
+
+    return best_throttle_sequence, best_fitness
+
 
 def calculate_velocity(v0, throttle, m, f):
     """
@@ -38,12 +125,28 @@ def fitness(
     speed_weight=2.5,
     length_weight=0.1,
     nonzero_weight=0.1,
-):
+) -> FITNESS_SCORE_TYPE:
     """
     Fitness function:
     - w1: weight for distance difference
     - w2: weight for final speed penalty
     - w3: weight for length penalty
+
+    :param v0:
+    :param throttles:
+    :param m:
+    :param f:
+    :param d_target:
+    :param v_threshold:
+    :param distance_weight:
+    :param speed_weight:
+    :param length_weight:
+    :param nonzero_weight:
+    :return: tuple of:
+        - score: the fitness score (lower is better)
+        - distance_diff: the absolute difference from the target distance
+        - speed_penalty: the penalty for the final speed
+        - length_penalty: the penalty for the length of the sequence
     """
     total_distance, final_speed = calculate_total_distance(v0, throttles, m, f)
 
@@ -136,81 +239,6 @@ def mutate(throttle_sequence, throttle_range, mutation_rate=0.1):
     return throttle_sequence
 
 
-def genetic_algorithm(
-    v0,
-    m,
-    f,
-    d_target,
-    v_threshold,
-    max_t=100,
-    throttle_range=(1, 100),
-    pop_size=100,
-    num_generations=100,
-    mutation_rate=0.1,
-    num_best_parents=20,
-    num_worst_parents=10,
-    distance_weigth=1.0,
-    speed_weight=0.5,
-    length_weight=0.01,
-    nonzero_weight=0.01,
-    timeout_ms=TIMEOUT_1000_MS,
-):
-    """
-    Run the genetic algorithm to find the optimal variable-length throttle sequence.
-    """
-    # Step 1: Initialize the population
-    population = generate_initial_population(pop_size, max_t, throttle_range)
-    start_time = time.monotonic_ns() / 1e6  # Start time in milliseconds
-
-    for generation in range(num_generations):
-        # Step 2: Calculate fitness for each individual in the population
-        fitness_scores = [
-            fitness(
-                v0, throttles, m, f, d_target, v_threshold, distance_weigth, speed_weight, length_weight, nonzero_weight
-            )
-            for throttles in population
-        ]
-
-        # Step 3: Select the best individuals as parents
-        best_parents = select_best_parents(population, fitness_scores, num_best_parents)
-        worst_parents = select_random_parents(population, fitness_scores, num_worst_parents)
-
-        all_parents = best_parents + worst_parents
-
-        # Step 4: Create the next generation through crossover
-        next_generation = []
-        while len(next_generation) < pop_size:
-            parent1, parent2 = random.sample(all_parents, 2)
-            child = crossover(parent1, parent2, max_t)
-            next_generation.append(child)
-
-        # Step 5: Apply mutation to the offspring
-        next_generation = [mutate(child, throttle_range, mutation_rate) for child in next_generation]
-
-        # Display progress
-        best_fitness = min(fitness_scores, key=lambda x: x[0])
-        best_throttle_sequence = population[fitness_scores.index(best_fitness)]
-        # print(
-        #     f"Generation {generation + 1}, "
-        #     f"best score: {best_fitness[0]:.02f}, distance_diff: {best_fitness[1]:.02f}, "
-        #     f"speed diff: {best_fitness[2]:.02f}, "
-        #     f"best sequence length: {best_fitness[3]} or {len(best_throttle_sequence)}"
-        # )
-        # print('[{}] {} -> {:.02f}'.format(generation + 1, best_throttle_sequence, best_fitness[0]))
-
-        # if best_fitness[1] <= 3 and best_fitness[2] <= 3:
-        #     print("Found a good enough solution!")
-        #     break
-        # Update the population
-        population = next_generation
-        actual_time = time.monotonic_ns() / 1e6  # Current time in milliseconds
-        if actual_time  - start_time >= timeout_ms:
-            print("Timeout reached after {} generations".format(generation + 1))
-            return best_throttle_sequence, best_fitness
-
-    return best_throttle_sequence, best_fitness
-
-
 def get_distance_for_throttles_velocities(v0, m, f, throttles, start_position):
     """
     Run the path for a given sequence of throttles and return the final velocity.
@@ -270,7 +298,8 @@ if __name__ == '__main__':
     # print(f"Best throttle sequence: {sorted(best_throttles)}")
     print(f"Best throttle sequence (non sorted): {best_throttles}")
     print(f"Best fitness: {best_fitness}")
-    print(f"Length of best throttle sequence: {len(best_throttles)}")
+    if best_throttles:
+        print(f"Length of best throttle sequence: {len(best_throttles)}")
 
     positions = get_distance_for_throttles_velocities(v0, m, f, best_throttles, 0)
     print(f"positions for the best throttle (non sorted): {positions}")
