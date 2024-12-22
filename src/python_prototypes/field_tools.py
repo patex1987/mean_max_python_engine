@@ -1,5 +1,9 @@
+"""
+Various tools related to playfield and distance calculations
+TODO: I hate calling something as tools
+"""
+
 import math
-from enum import Enum
 
 PLAYFIELD_RADIUS = 6000
 FIELD_SIZE = PLAYFIELD_RADIUS * 2
@@ -8,11 +12,13 @@ SQUARE_SPLIT = FIELD_SIZE // SQUARE_COUNT
 WATER_TOWN_RADIUS = 3000
 
 
-def dot_product(x, y, vx, vy):
+
+
+def dot_product(x: float, y: float, vx: float, vy: float) -> float:
     return x * vx + y * vy
 
 
-def is_moving_towards_center(x, y, vx, vy):
+def is_moving_towards_center(x: float, y: float, vx: float, vy: float) -> bool:
     dot_prod = dot_product(x, y, vx, vy)
 
     if dot_prod < 0:
@@ -21,15 +27,15 @@ def is_moving_towards_center(x, y, vx, vy):
     return False
 
 
-def is_inside_water_town(x, y, radius_threshold=WATER_TOWN_RADIUS):
+def is_inside_water_town(x: int, y: int, radius_threshold: int = WATER_TOWN_RADIUS) -> bool:
     return (x**2 + y**2) ** 0.5 <= radius_threshold
 
 
-def is_inside_playfield(x, y, radius_threshold=PLAYFIELD_RADIUS):
+def is_inside_playfield(x: int, y: int, radius_threshold: int = PLAYFIELD_RADIUS):
     return (x**2 + y**2) ** 0.5 <= radius_threshold
 
 
-def calculate_velocity(v0x, v0y, throttle, m, f):
+def calculate_velocity(v0x: float, v0y: float, throttle: int, m: float, f: float) -> tuple[float, float]:
     """
     Calculate the new velocities (vx, vy) given the initial velocities in x and y directions,
     the overall throttle, and the mass and friction.
@@ -62,7 +68,7 @@ def calculate_velocity(v0x, v0y, throttle, m, f):
     return vx, vy
 
 
-def get_grid_position(coordinate: tuple[int, int], split_size=SQUARE_SPLIT):
+def get_grid_position(coordinate: tuple[int, int], split_size=SQUARE_SPLIT) -> tuple[int, int]:
     """
     Get the grid position of a coordinate.
     """
@@ -70,45 +76,11 @@ def get_grid_position(coordinate: tuple[int, int], split_size=SQUARE_SPLIT):
     return x // split_size, y // split_size
 
 
-class Entity(Enum):
-    """
-    TODO: this doesn't differentiate between player and enemies
-    """
-
-    TANKER = 'TANKER'
-    DESTROYER = 'DESTROYER'
-    REAPER = 'REAPER'
-    DOOF = 'DOOF'
-    WRECK = 'WRECK'
-    TAR_POOL = 'TAR_POOL'
-    OIL_POOL = 'OIL_POOL'
-
-
-class Unit:
-
-    def __init__(self, x, y, vx, vy, radius, unit_type, unit_owner=None):
-        self.x = x
-        self.y = y
-        self.vx = vx
-        self.vy = vy
-        self.radius = radius
-        self.unit_type = unit_type
-        self.unit_owner = unit_owner
-
-
-# TODO: this stores only the units today, we need to create an interface as we **might** need the exact implementation
-class GridUnitState:
-
-    def __init__(self, grid_coordinate: tuple[int, int], unit: Unit):
-        self.grid_coordinate = grid_coordinate
-        self.unit = unit
-
-
-def get_manhattan_distance(coordinate_a, coordinate_b):
+def get_manhattan_distance(coordinate_a: tuple[int, int], coordinate_b: tuple[int, int]) -> int:
     return abs(coordinate_a[0] - coordinate_b[0]) + abs(coordinate_a[1] - coordinate_b[1])
 
 
-def get_euclidean_distance(coordinate_a, coordinate_b):
+def get_euclidean_distance(coordinate_a: tuple[int, int], coordinate_b: tuple[int, int]):
     return math.sqrt((coordinate_a[0] - coordinate_b[0]) ** 2 + (coordinate_a[1] - coordinate_b[1]) ** 2)
 
 
