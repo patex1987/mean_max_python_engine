@@ -2,7 +2,7 @@ from typing import Any
 
 from python_prototypes.field_types import GameGridInformation, PlayerState
 from python_prototypes.reaper.q_orchestrator import ReaperGameState
-from python_prototypes.reaper.q_state_types import ReaperQState
+from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTypes
 
 
 def reaper_decider(
@@ -10,7 +10,7 @@ def reaper_decider(
     reaper_q_state: ReaperQState,
     game_grid_information: GameGridInformation,
     player_state: PlayerState,
-) -> tuple[str, Any]:
+) -> tuple[ReaperActionTypes, Any]:
     """
 
     :param reaper_game_state:
@@ -49,4 +49,4 @@ def reaper_decider(
 
     new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
     reaper_game_state.propagate_successful_goal(current_goal_type)
-    return new_reaper_goal_type
+    return new_reaper_goal_type, target

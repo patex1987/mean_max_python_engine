@@ -12,7 +12,7 @@ from python_prototypes.reaper.q_state_types import (
     get_default_reaper_actions_q_weights,
     ReaperActionsQWeights,
     get_default_water_relations,
-    get_default_enemies_relation,
+    get_default_enemies_relation, ReaperActionTypes,
 )
 from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner
 from python_prototypes.reaper.target_reached_determiner import get_goal_reached_determiner
@@ -38,7 +38,7 @@ class ReaperGameState:
     def is_on_mission(self):
         return self._mission_set
 
-    def initialize_new_goal_type(self, reaper_q_state: ReaperQState) -> str:
+    def initialize_new_goal_type(self, reaper_q_state: ReaperQState) -> ReaperActionTypes:
         new_goal = self.get_new_goal_type(reaper_q_state)
         self.set_and_initialize_goal_type(new_goal)
         return new_goal
@@ -53,7 +53,7 @@ class ReaperGameState:
 
         self._current_target_entity = updated_grid_state.unit.unit_type
 
-    def get_new_goal_type(self, reaper_q_state: ReaperQState) -> str:
+    def get_new_goal_type(self, reaper_q_state: ReaperQState) -> ReaperActionTypes:
         q_state_key = reaper_q_state.get_state_tuple_key()
         reaper_q_action_weights = self._q_table.setdefault(
             q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
@@ -72,9 +72,9 @@ class ReaperGameState:
 
             return goal_type
 
-        return 'wait'
+        return ReaperActionTypes.wait
 
-    def set_and_initialize_goal_type(self, new_goal_type: str):
+    def set_and_initialize_goal_type(self, new_goal_type: ReaperActionTypes):
         self._mission_set = True
         self._current_mission_steps = []
         self.current_goal_type = new_goal_type
@@ -91,7 +91,7 @@ class ReaperGameState:
         for state_step in self._current_mission_steps:
             self._reaper_q_actions.inner_weigths_dict[state_step] -= failure_penalty
 
-    def is_goal_possible(self, reaper_q_state: ReaperQState, goal_type: str) -> bool:
+    def is_goal_possible(self, reaper_q_state: ReaperQState, goal_type: ReaperActionTypes) -> bool:
         """
         TODO: the availability determiner apprach is just one way to achieve this
         """
@@ -115,11 +115,11 @@ class ReaperGameState:
         is_reached = reachability_determiner(self._reaper_q_state)
         return is_reached
 
-    def initialize_new_target(self, reaper_goal_type: str, reaper_q_state: ReaperQState):
+    def initialize_new_target(self, reaper_goal_type: ReaperActionTypes, reaper_q_state: ReaperQState):
         target_tracker = get_target_tracker(reaper_goal_type)
         self._target_tracker = target_tracker
-        target_selector = get_target_selector(reaper_goal_type, reaper_q_state)
-        target = target_selector.select(reaper_goal_type)
+        target_selector = get_target_selector(reaper_goal_type)
+        target = target_selector(reaper_q_state)
         self._current_target_entity = target
         self._target_tracker.track(player_reaper_unit=player_reaper_unit, target_entity=target)
         return target

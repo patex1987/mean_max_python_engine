@@ -57,7 +57,7 @@ class ReaperActionsQWeights:
 
     def __init__(
         self,
-        inner_weigths_dict: dict[str, float],
+        inner_weigths_dict: dict['ReaperActionTypes', float],
     ):
         self.inner_weigths_dict = inner_weigths_dict
 
@@ -113,7 +113,6 @@ def get_default_enemies_relation() -> dict[tuple[str, str], list[Any]]:
 
 class ReaperActionTypes(Enum):
     """
-    TODO: use the enum instead of the hard coded strings
     TODO: create multiple use super power categories
     """
 

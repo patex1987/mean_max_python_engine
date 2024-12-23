@@ -26,8 +26,8 @@ def get_target_selector(reaper_goal_type: ReaperActionTypes) -> Callable[[Reaper
         case ReaperActionTypes.ram_other_far:
             return partial(select_enemy_other_by_distance, distance_level='far')
         case ReaperActionTypes.use_super_power:
-            # currently we consider
-            return partial(select_water_target_by_risk_level(risk_level='safe'))
+            # TODO: currently we consider only wrecks for super powers, add new super power categories in the future
+            return partial(select_water_target_by_risk_level, risk_level='safe')
         case ReaperActionTypes.wait:
             return no_op_target_selector
         case _:
