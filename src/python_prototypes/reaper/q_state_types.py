@@ -2,6 +2,7 @@
 this module contains classes and functions related to represent and
 initialize the q state of the game decision learning
 """
+from enum import Enum
 from typing import Any
 
 
@@ -16,11 +17,12 @@ class ReaperQState:
 
     def __init__(
         self,
-        water_reaper_relation: dict[tuple[str, str], list[Any]],
-        water_other_relation: dict[tuple[str, str], list[Any]],
-        tanker_enemy_relation: dict[tuple[str, str], list[Any]],
-        player_reaper_relation: dict[tuple[str, str], list[Any]],
-        player_other_relation: dict[tuple[str, str], list[Any]],
+        # TODO: the Any is actually an integer and it is the id of the object
+        water_reaper_relation: dict[tuple[str, str], list[int]],
+        water_other_relation: dict[tuple[str, str], list[int]],
+        tanker_enemy_relation: dict[tuple[str, str], list[int]],
+        player_reaper_relation: dict[tuple[str, str], list[int]],
+        player_other_relation: dict[tuple[str, str], list[int]],
         super_power_available: bool,
     ):
         self.water_reaper_relation = water_reaper_relation

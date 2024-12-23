@@ -5,7 +5,7 @@ learning
 
 import random
 
-from python_prototypes.field_types import GridUnitState, GameGridInformation
+from python_prototypes.field_types import GridUnitState
 from python_prototypes.reaper.goal_possibility_determiner import get_goal_possibility_determiner
 from python_prototypes.reaper.q_state_types import (
     ReaperQState,
@@ -16,12 +16,8 @@ from python_prototypes.reaper.q_state_types import (
 )
 from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner
 from python_prototypes.reaper.target_reached_determiner import get_goal_reached_determiner
+from python_prototypes.reaper.target_selector import get_target_selector
 from python_prototypes.reaper.target_tracker_determiner import get_target_tracker
-
-
-def get_target_selector(reaper_goal_type: str, game_grid_information: GameGridInformation):
-
-    pass
 
 
 class ReaperGameState:
@@ -119,10 +115,10 @@ class ReaperGameState:
         is_reached = reachability_determiner(self._reaper_q_state)
         return is_reached
 
-    def initialize_new_target(self, reaper_goal_type: str, game_grid_information: GameGridInformation):
+    def initialize_new_target(self, reaper_goal_type: str, reaper_q_state: ReaperQState):
         target_tracker = get_target_tracker(reaper_goal_type)
         self._target_tracker = target_tracker
-        target_selector = get_target_selector(reaper_goal_type, game_grid_information)
+        target_selector = get_target_selector(reaper_goal_type, reaper_q_state)
         target = target_selector.select(reaper_goal_type)
         self._current_target_entity = target
         self._target_tracker.track(player_reaper_unit=player_reaper_unit, target_entity=target)
@@ -159,7 +155,7 @@ class TestReaperGameStateInitializeNewTarget:
         )
         reaper_game_state = ReaperGameState()
         reaper_game_state.initialize_new_goal_type(reaper_q_state)
-        reaper_game_state.initialize_new_target(reaper_game_state.current_goal_type, game_grid_information)
+        reaper_game_state.initialize_new_target(reaper_game_state.current_goal_type, reaper_q_state)
         assert reaper_game_state._current_target_entity is not None
         assert reaper_game_state._target_tracker is not None
         assert reaper_game_state._target_tracker.steps_taken == 0
