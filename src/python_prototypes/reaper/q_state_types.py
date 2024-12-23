@@ -110,6 +110,24 @@ def get_default_enemies_relation() -> dict[tuple[str, str], list[Any]]:
     return enemies_relation
 
 
+class ReaperActionTypes(Enum):
+    """
+    TODO: use the enum instead of the hard coded strings
+    TODO: create multiple use super power categories
+    """
+    harvest_safe = 1
+    harvest_risky = 2
+    harvest_dangerous = 3
+    ram_reaper_close = 4
+    ram_reaper_mid = 5
+    ram_reaper_far = 6
+    ram_other_close = 7
+    ram_other_mid = 8
+    ram_other_far = 9
+    use_super_power = 10
+    wait = 11
+
+
 def get_default_reaper_actions_q_weights() -> dict[str, float]:
     reaper_actions_q_weights = {
         'harvest_safe': 0.0,
