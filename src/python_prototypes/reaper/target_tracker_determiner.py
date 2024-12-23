@@ -9,31 +9,32 @@ from abc import ABC, abstractmethod
 
 from python_prototypes.field_tools import get_manhattan_distance, get_euclidean_distance
 from python_prototypes.field_types import GridUnitState
+from python_prototypes.reaper.q_state_types import ReaperActionTypes
 
 
-def get_target_tracker(reaper_goal_type: str) -> 'BaseTracker':
+def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> 'BaseTracker':
     match reaper_goal_type:
-        case 'harvest_safe':
+        case ReaperActionTypes.harvest_safe:
             return StaticTargetTracker()
-        case 'harvest_risky':
+        case ReaperActionTypes.harvest_risky:
             return StaticTargetTracker()
-        case 'harvest_dangerous':
+        case ReaperActionTypes.harvest_dangerous:
             return StaticTargetTracker()
-        case 'ram_reaper_close':
+        case ReaperActionTypes.ram_reaper_close:
             return DynamicTargetTracker()
-        case 'ram_reaper_mid':
+        case ReaperActionTypes.ram_reaper_mid:
             return DynamicTargetTracker()
-        case 'ram_reaper_far':
+        case ReaperActionTypes.ram_reaper_far:
             return DynamicTargetTracker()
-        case 'ram_other_close':
+        case ReaperActionTypes.ram_other_close:
             return DynamicTargetTracker()
-        case 'ram_other_mid':
+        case ReaperActionTypes.ram_other_mid:
             return DynamicTargetTracker()
-        case 'ram_other_far':
+        case ReaperActionTypes.ram_other_far:
             return DynamicTargetTracker()
-        case 'use_super_power':
+        case ReaperActionTypes.use_super_power:
             return NoOpTracker()
-        case 'wait':
+        case ReaperActionTypes.wait:
             return NoOpTracker()
         case _:
             raise ValueError(f'Invalid goal type: {reaper_goal_type}')

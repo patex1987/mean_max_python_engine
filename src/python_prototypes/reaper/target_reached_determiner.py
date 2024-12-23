@@ -1,26 +1,29 @@
-def get_goal_reached_determiner(current_goal):
+from python_prototypes.reaper.q_state_types import ReaperActionTypes
+
+
+def get_goal_reached_determiner(current_goal: ReaperActionTypes):
     match current_goal:
-        case 'harvest_safe':
+        case ReaperActionTypes.harvest_safe:
             return
-        case 'harvest_risky':
+        case ReaperActionTypes.harvest_risky:
             return
-        case 'harvest_dangerous':
+        case ReaperActionTypes.harvest_dangerous:
             return
-        case 'ram_reaper_close':
+        case ReaperActionTypes.ram_reaper_close:
             return
-        case 'ram_reaper_mid':
+        case ReaperActionTypes.ram_reaper_mid:
             return
-        case 'ram_reaper_far':
+        case ReaperActionTypes.ram_reaper_far:
             return
-        case 'ram_other_close':
+        case ReaperActionTypes.ram_other_close:
             return
-        case 'ram_other_mid':
+        case ReaperActionTypes.ram_other_mid:
             return
-        case 'ram_other_far':
+        case ReaperActionTypes.ram_other_far:
             return
-        case 'use_super_power':
+        case ReaperActionTypes.use_super_power:
             return
-        case 'wait':
+        case ReaperActionTypes.wait:
             return
         case _:
             raise ValueError(f'Invalid goal type: {current_goal}')

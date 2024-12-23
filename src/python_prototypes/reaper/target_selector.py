@@ -2,39 +2,39 @@ from typing import Any, Callable
 
 from mypy.plugins.default import partial
 
-from python_prototypes.reaper.q_state_types import ReaperQState
+from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTypes
 
 
-def get_target_selector(reaper_goal_type: str) -> Callable[[ReaperQState], int | None]:
+def get_target_selector(reaper_goal_type: ReaperActionTypes) -> Callable[[ReaperQState], int | None]:
     match reaper_goal_type:
-        case 'harvest_safe':
+        case ReaperActionTypes.harvest_safe:
             return partial(select_water_target_by_risk_level, risk_level='safe')
-        case 'harvest_risky':
+        case ReaperActionTypes.harvest_risky:
             return partial(select_water_target_by_risk_level, risk_level='risky')
-        case 'harvest_dangerous':
+        case ReaperActionTypes.harvest_dangerous:
             return partial(select_water_target_by_risk_level, risk_level='dangerous')
-        case 'ram_reaper_close':
+        case ReaperActionTypes.ram_reaper_close:
             return partial(select_enemy_reaper_by_distance, distance_level='close')
-        case 'ram_reaper_mid':
+        case ReaperActionTypes.ram_reaper_mid:
             return partial(select_enemy_reaper_by_distance, distance_level='medium')
-        case 'ram_reaper_far':
+        case ReaperActionTypes.ram_reaper_far:
             return partial(select_enemy_reaper_by_distance, distance_level='far')
-        case 'ram_other_close':
+        case ReaperActionTypes.ram_other_close:
             return partial(select_enemy_other_by_distance, distance_level='close')
-        case 'ram_other_mid':
+        case ReaperActionTypes.ram_other_mid:
             return partial(select_enemy_other_by_distance, distance_level='medium')
-        case 'ram_other_far':
+        case ReaperActionTypes.ram_other_far:
             return partial(select_enemy_other_by_distance, distance_level='far')
-        case 'use_super_power':
+        case ReaperActionTypes.use_super_power:
             # currently we consider
             return partial(select_water_target_by_risk_level(risk_level='safe'))
-        case 'wait':
+        case ReaperActionTypes.wait:
             return no_op_target_selector
         case _:
             raise ValueError(f'Invalid goal type: {reaper_goal_type}')
 
 
-def select_water_target_by_risk_level(risk_level:str, reaper_q_state: ReaperQState) -> int:
+def select_water_target_by_risk_level(risk_level: str, reaper_q_state: ReaperQState) -> int:
     if relation := reaper_q_state.water_reaper_relation[('close', risk_level)]:
         return relation[0]
     if relation := reaper_q_state.water_reaper_relation[('medium', risk_level)]:
@@ -43,14 +43,16 @@ def select_water_target_by_risk_level(risk_level:str, reaper_q_state: ReaperQSta
         return relation[0]
     raise ValueError(f'No water target found for risk level: {risk_level}')
 
-def select_enemy_reaper_by_distance(distance_level:str, reaper_q_state: ReaperQState) -> int:
+
+def select_enemy_reaper_by_distance(distance_level: str, reaper_q_state: ReaperQState) -> int:
     if relation := reaper_q_state.player_reaper_relation[(distance_level, 'close')]:
         return relation[0]
     if relation := reaper_q_state.player_reaper_relation[(distance_level, 'medium')]:
         return relation[0]
     raise ValueError(f'No enemy reaper found for distance level: {distance_level}')
 
-def select_enemy_other_by_distance(distance_level:str, reaper_q_state: ReaperQState) -> int:
+
+def select_enemy_other_by_distance(distance_level: str, reaper_q_state: ReaperQState) -> int:
     if relation := reaper_q_state.player_other_relation[(distance_level, 'close')]:
         return relation[0]
     if relation := reaper_q_state.player_other_relation[(distance_level, 'medium')]:

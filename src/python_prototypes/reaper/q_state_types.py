@@ -2,6 +2,7 @@
 this module contains classes and functions related to represent and
 initialize the q state of the game decision learning
 """
+
 from enum import Enum
 from typing import Any
 
@@ -115,6 +116,7 @@ class ReaperActionTypes(Enum):
     TODO: use the enum instead of the hard coded strings
     TODO: create multiple use super power categories
     """
+
     harvest_safe = 1
     harvest_risky = 2
     harvest_dangerous = 3
@@ -128,29 +130,28 @@ class ReaperActionTypes(Enum):
     wait = 11
 
 
-def get_default_reaper_actions_q_weights() -> dict[str, float]:
+def get_default_reaper_actions_q_weights() -> dict[ReaperActionTypes, float]:
     reaper_actions_q_weights = {
-        'harvest_safe': 0.0,
-        'harvest_risky': 0.0,
-        'harvest_dangerous': 0.0,
-        'ram_reaper_close': 0.0,
-        'ram_reaper_mid': 0.0,
-        'ram_reaper_far': 0.0,
-        'ram_other_close': 0.0,
-        'ram_other_mid': 0.0,
-        'ram_other_far': 0.0,
-        'use_super_power': 0.0,
-        'wait': 0.0,
+        ReaperActionTypes.harvest_safe: 0.0,
+        ReaperActionTypes.harvest_risky: 0.0,
+        ReaperActionTypes.harvest_dangerous: 0.0,
+        ReaperActionTypes.ram_reaper_close: 0.0,
+        ReaperActionTypes.ram_reaper_mid: 0.0,
+        ReaperActionTypes.ram_reaper_far: 0.0,
+        ReaperActionTypes.ram_other_close: 0.0,
+        ReaperActionTypes.ram_other_mid: 0.0,
+        ReaperActionTypes.ram_other_far: 0.0,
+        ReaperActionTypes.use_super_power: 0.0,
+        ReaperActionTypes.wait: 0.0,
     }
     return reaper_actions_q_weights
 
 
 def convert_relation_to_tuple_key(relation: dict[tuple[str, str], list[Any]]) -> tuple:
-    tuple_key = tuple(
-        (k[0], k[1], 1 if len(v)>0 else 0) for k, v in relation.items()
-    )
+    tuple_key = tuple((k[0], k[1], 1 if len(v) > 0 else 0) for k, v in relation.items())
     return tuple_key
 
+
 def convert_to_state_dict(relation: dict[tuple[str, str], list[Any]]) -> dict[tuple[str, str], int]:
-    state_dict = {state_key: 1 if len(coordinates)>0 else 0 for state_key, coordinates in relation.items()}
+    state_dict = {state_key: 1 if len(coordinates) > 0 else 0 for state_key, coordinates in relation.items()}
     return state_dict

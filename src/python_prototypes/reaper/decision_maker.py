@@ -6,10 +6,10 @@ from python_prototypes.reaper.q_state_types import ReaperQState
 
 
 def reaper_decider(
-        reaper_game_state: ReaperGameState,
-        reaper_q_state: ReaperQState,
-        game_grid_information: GameGridInformation,
-        player_state: PlayerState
+    reaper_game_state: ReaperGameState,
+    reaper_q_state: ReaperQState,
+    game_grid_information: GameGridInformation,
+    player_state: PlayerState,
 ) -> tuple[str, Any]:
     """
 
@@ -27,8 +27,7 @@ def reaper_decider(
     if not on_mission:
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
         new_target = reaper_game_state.initialize_new_target(
-            reaper_goal_type=new_reaper_goal_type,
-            game_grid_information=game_grid_information
+            reaper_goal_type=new_reaper_goal_type, game_grid_information=game_grid_information
         )
         return new_reaper_goal_type, new_target
 
@@ -38,8 +37,7 @@ def reaper_decider(
         reaper_game_state.propagate_failed_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
         new_target = reaper_game_state.initialize_new_target(
-            reaper_goal_type=new_reaper_goal_type,
-            game_grid_information=game_grid_information
+            reaper_goal_type=new_reaper_goal_type, game_grid_information=game_grid_information
         )
 
         return new_reaper_goal_type, new_target

@@ -1,30 +1,29 @@
-from python_prototypes.reaper.q_state_types import ReaperQState
+from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTypes
 
 
-def get_goal_possibility_determiner(current_goal):
-
+def get_goal_possibility_determiner(current_goal: ReaperActionTypes):
     match current_goal:
-        case 'harvest_safe':
+        case ReaperActionTypes.harvest_safe:
             return safe_water_possible
-        case 'harvest_risky':
+        case ReaperActionTypes.harvest_risky:
             return risky_water_possible
-        case 'harvest_dangerous':
+        case ReaperActionTypes.harvest_dangerous:
             return dangerous_water_possible
-        case 'ram_reaper_close':
+        case ReaperActionTypes.ram_reaper_close:
             return close_reaper_possible
-        case 'ram_reaper_mid':
+        case ReaperActionTypes.ram_reaper_mid:
             return mid_reaper_possible
-        case 'ram_reaper_far':
+        case ReaperActionTypes.ram_reaper_far:
             return far_reaper_possible
-        case 'ram_other_close':
+        case ReaperActionTypes.ram_other_close:
             return close_other_enemy_possible
-        case 'ram_other_mid':
+        case ReaperActionTypes.ram_other_mid:
             return mid_other_enemy_possible
-        case 'ram_other_far':
+        case ReaperActionTypes.ram_other_far:
             return far_other_enemy_possible
-        case 'use_super_power':
+        case ReaperActionTypes.use_super_power:
             return super_power_possible
-        case 'wait':
+        case ReaperActionTypes.wait:
             return no_op_possible
         case _:
             raise ValueError(f'Invalid goal type: {current_goal}')

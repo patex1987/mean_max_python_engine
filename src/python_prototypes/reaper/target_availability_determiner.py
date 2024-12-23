@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Callable, Any
 
 from python_prototypes.field_types import GridUnitState, GRID_COORD_UNIT_STATE_T
+from python_prototypes.reaper.q_state_types import ReaperActionTypes
 
 
 class TargetAvailabilityState(Enum):
@@ -10,29 +11,31 @@ class TargetAvailabilityState(Enum):
     replan_reach = 3
 
 
-def get_goal_target_determiner(current_goal_type) -> Callable[[str, Any, Any], TargetAvailabilityState]:
+def get_goal_target_determiner(
+    current_goal_type: ReaperActionTypes,
+) -> Callable[[str, Any, Any], TargetAvailabilityState]:
     match current_goal_type:
-        case 'harvest_safe':
+        case ReaperActionTypes.harvest_safe:
             return water_target_available
-        case 'harvest_risky':
+        case ReaperActionTypes.harvest_risky:
             return water_target_available
-        case 'harvest_dangerous':
+        case ReaperActionTypes.harvest_dangerous:
             return water_target_available
-        case 'ram_reaper_close':
+        case ReaperActionTypes.ram_reaper_close:
             return ram_reaper_target_available
-        case 'ram_reaper_mid':
+        case ReaperActionTypes.ram_reaper_mid:
             return ram_reaper_target_available
-        case 'ram_reaper_far':
+        case ReaperActionTypes.ram_reaper_far:
             return ram_reaper_target_available
-        case 'ram_other_close':
+        case ReaperActionTypes.ram_other_close:
             return ram_other_target_available
-        case 'ram_other_mid':
+        case ReaperActionTypes.ram_other_mid:
             return ram_other_target_available
-        case 'ram_other_far':
+        case ReaperActionTypes.ram_other_far:
             return ram_other_target_available
-        case 'use_super_power':
+        case ReaperActionTypes.use_super_power:
             return super_power_target_available
-        case 'wait':
+        case ReaperActionTypes.wait:
             return no_op_target_available
         case _:
             raise ValueError(f'Invalid goal type: {current_goal_type}')
