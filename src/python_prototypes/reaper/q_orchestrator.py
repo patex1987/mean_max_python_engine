@@ -5,7 +5,10 @@ learning
 
 import random
 
+import pytest
+
 from python_prototypes.field_types import GridUnitState
+from python_prototypes.reaper.exception_types import ImpossibleTarget
 from python_prototypes.reaper.goal_possibility_determiner import get_goal_possibility_determiner
 from python_prototypes.reaper.q_state_types import (
     ReaperQState,
@@ -121,7 +124,6 @@ class ReaperGameState:
         target_selector = get_target_selector(reaper_goal_type)
         target = target_selector(reaper_q_state)
         self._current_target_entity = target
-        self._target_tracker.track(player_reaper_unit=player_reaper_unit, target_entity=target)
         return target
 
 
@@ -145,6 +147,12 @@ def get_goal_success_reward(current_goal: str) -> float:
 
 class TestReaperGameStateInitializeNewTarget:
     def test_initialize_new_target(self):
+        """
+        this is something like a smoke test. things are wired up, and it
+        validates if all the components are working correctly
+
+        Really bad habit with that if statement
+        """
         reaper_q_state = ReaperQState(
             water_reaper_relation=get_default_water_relations(),
             water_other_relation=get_default_water_relations(),
@@ -155,7 +163,16 @@ class TestReaperGameStateInitializeNewTarget:
         )
         reaper_game_state = ReaperGameState()
         reaper_game_state.initialize_new_goal_type(reaper_q_state)
+
+        if reaper_game_state.current_goal_type != ReaperActionTypes.wait:
+            with pytest.raises(ImpossibleTarget):
+                reaper_game_state.initialize_new_target(reaper_game_state.current_goal_type, reaper_q_state)
+            return
+
         reaper_game_state.initialize_new_target(reaper_game_state.current_goal_type, reaper_q_state)
-        assert reaper_game_state._current_target_entity is not None
+        assert reaper_game_state.is_on_mission() is True
+        assert reaper_game_state.current_goal_type is not None
+        assert isinstance(reaper_game_state.current_goal_type, ReaperActionTypes)
         assert reaper_game_state._target_tracker is not None
         assert reaper_game_state._target_tracker.steps_taken == 0
+        assert reaper_game_state._current_target_entity is None

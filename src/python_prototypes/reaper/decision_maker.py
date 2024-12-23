@@ -16,11 +16,6 @@ def reaper_decider(
     :param reaper_game_state:
     :param reaper_q_state:
     :return: tuple[ goal_type, target unit ]
-        returns the goal type as string currently.
-        - See
-        `python_prototypes.reaper.q_state_types.get_default_reaper_actions_q_weights`
-        for the possible values
-        - TODO: change it to an enum
     """
     on_mission = reaper_game_state.is_on_mission()
 
@@ -29,6 +24,7 @@ def reaper_decider(
         new_target = reaper_game_state.initialize_new_target(
             reaper_goal_type=new_reaper_goal_type, game_grid_information=game_grid_information
         )
+        reaper_game_state._target_tracker.track_target(new_target)
         return new_reaper_goal_type, new_target
 
     current_goal_type = reaper_game_state.current_goal_type
@@ -39,7 +35,7 @@ def reaper_decider(
         new_target = reaper_game_state.initialize_new_target(
             reaper_goal_type=new_reaper_goal_type, game_grid_information=game_grid_information
         )
-
+        reaper_game_state._target_tracker.track_target(new_target)
         return new_reaper_goal_type, new_target
 
     goal_reached = reaper_game_state.is_goal_reached(current_goal_type)

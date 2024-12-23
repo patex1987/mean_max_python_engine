@@ -1,0 +1,2 @@
+class ImpossibleTarget(Exception):
+    pass

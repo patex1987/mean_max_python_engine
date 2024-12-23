@@ -2,6 +2,7 @@ from typing import Any, Callable
 
 from mypy.plugins.default import partial
 
+from python_prototypes.reaper.exception_types import ImpossibleTarget
 from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTypes
 
 
@@ -34,30 +35,30 @@ def get_target_selector(reaper_goal_type: ReaperActionTypes) -> Callable[[Reaper
             raise ValueError(f'Invalid goal type: {reaper_goal_type}')
 
 
-def select_water_target_by_risk_level(risk_level: str, reaper_q_state: ReaperQState) -> int:
+def select_water_target_by_risk_level(reaper_q_state: ReaperQState, risk_level: str) -> int:
     if relation := reaper_q_state.water_reaper_relation[('close', risk_level)]:
         return relation[0]
     if relation := reaper_q_state.water_reaper_relation[('medium', risk_level)]:
         return relation[0]
     if relation := reaper_q_state.water_reaper_relation[('far', risk_level)]:
         return relation[0]
-    raise ValueError(f'No water target found for risk level: {risk_level}')
+    raise ImpossibleTarget(f'No water target found for risk level: {risk_level}')
 
 
-def select_enemy_reaper_by_distance(distance_level: str, reaper_q_state: ReaperQState) -> int:
+def select_enemy_reaper_by_distance(reaper_q_state: ReaperQState, distance_level: str) -> int:
     if relation := reaper_q_state.player_reaper_relation[(distance_level, 'close')]:
         return relation[0]
     if relation := reaper_q_state.player_reaper_relation[(distance_level, 'medium')]:
         return relation[0]
-    raise ValueError(f'No enemy reaper found for distance level: {distance_level}')
+    raise ImpossibleTarget(f'No enemy reaper found for distance level: {distance_level}')
 
 
-def select_enemy_other_by_distance(distance_level: str, reaper_q_state: ReaperQState) -> int:
+def select_enemy_other_by_distance(reaper_q_state: ReaperQState, distance_level: str) -> int:
     if relation := reaper_q_state.player_other_relation[(distance_level, 'close')]:
         return relation[0]
     if relation := reaper_q_state.player_other_relation[(distance_level, 'medium')]:
         return relation[0]
-    raise ValueError(f'No other enemy found for distance level: {distance_level}')
+    raise ImpossibleTarget(f'No other enemy found for distance level: {distance_level}')
 
 
 def no_op_target_selector(reaper_q_state: ReaperQState) -> None:
