@@ -1,16 +1,26 @@
+from dataclasses import dataclass
 from typing import Any, Callable
 
 from mypy.plugins.default import partial
 
+from python_prototypes.field_types import Entity
 from python_prototypes.reaper.exception_types import ImpossibleTarget
 from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTypes
 
 
-def get_target_id_selector(reaper_goal_type: ReaperActionTypes) -> Callable[[ReaperQState], int | None]:
+@dataclass
+class SelectedTargetInformation:
+    id: int
+    type: Entity
+
+
+def get_target_id_selector(
+    reaper_goal_type: ReaperActionTypes,
+) -> Callable[[ReaperQState], SelectedTargetInformation | None]:
     """
 
     :param reaper_goal_type:
-    :return: the callable returns the id of the target object (if available)
+    :return: the callable returns the id of the target object (if available) and its entity type
     """
     match reaper_goal_type:
         case ReaperActionTypes.harvest_safe:
@@ -40,29 +50,29 @@ def get_target_id_selector(reaper_goal_type: ReaperActionTypes) -> Callable[[Rea
             raise ValueError(f'Invalid goal type: {reaper_goal_type}')
 
 
-def select_water_target_by_risk_level(reaper_q_state: ReaperQState, risk_level: str) -> int:
+def select_water_target_by_risk_level(reaper_q_state: ReaperQState, risk_level: str) -> SelectedTargetInformation:
     if relation := reaper_q_state.water_reaper_relation[('close', risk_level)]:
-        return relation[0]
+        return SelectedTargetInformation(relation[0], Entity.WRECK)
     if relation := reaper_q_state.water_reaper_relation[('medium', risk_level)]:
-        return relation[0]
+        return SelectedTargetInformation(relation[0], Entity.WRECK)
     if relation := reaper_q_state.water_reaper_relation[('far', risk_level)]:
-        return relation[0]
+        return SelectedTargetInformation(relation[0], Entity.WRECK)
     raise ImpossibleTarget(f'No water target found for risk level: {risk_level}')
 
 
-def select_enemy_reaper_by_distance(reaper_q_state: ReaperQState, distance_level: str) -> int:
+def select_enemy_reaper_by_distance(reaper_q_state: ReaperQState, distance_level: str) -> SelectedTargetInformation:
     if relation := reaper_q_state.player_reaper_relation[(distance_level, 'close')]:
-        return relation[0]
+        return SelectedTargetInformation(relation[0], Entity.REAPER)
     if relation := reaper_q_state.player_reaper_relation[(distance_level, 'medium')]:
-        return relation[0]
+        return SelectedTargetInformation(relation[0], Entity.REAPER)
     raise ImpossibleTarget(f'No enemy reaper found for distance level: {distance_level}')
 
 
-def select_enemy_other_by_distance(reaper_q_state: ReaperQState, distance_level: str) -> int:
+def select_enemy_other_by_distance(reaper_q_state: ReaperQState, distance_level: str) -> SelectedTargetInformation:
     if relation := reaper_q_state.player_other_relation[(distance_level, 'close')]:
-        return relation[0]
+        return SelectedTargetInformation(relation[0], Entity.OTHER_ENEMY)
     if relation := reaper_q_state.player_other_relation[(distance_level, 'medium')]:
-        return relation[0]
+        return SelectedTargetInformation(relation[0], Entity.OTHER_ENEMY)
     raise ImpossibleTarget(f'No other enemy found for distance level: {distance_level}')
 
 

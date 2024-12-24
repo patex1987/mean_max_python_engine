@@ -15,6 +15,7 @@ class Entity(Enum):
     WRECK = 4
     TAR_POOL = 5
     OIL_POOL = 6
+    OTHER_ENEMY = 7 # DESTROYER + DOOF
 
 
 class PlayerFieldTypes(Enum):
@@ -74,13 +75,13 @@ class GameGridInformation:
 
     full_grid_state: GRID_COORD_UNIT_STATE_T
     wreck_grid_state: GRID_COORD_UNIT_STATE_T
-    wreck_id_to_grid_coord: dict[Any, tuple[int, int]]
+    wreck_id_to_grid_coord: dict[int, tuple[int, int]]
     tanker_grid_state: GRID_COORD_UNIT_STATE_T
-    tanker_id_to_grid_coord: dict[Any, tuple[int, int]]
+    tanker_id_to_grid_coord: dict[int, tuple[int, int]]
     enemy_reaper_grid_state: GRID_COORD_UNIT_STATE_T
-    enemy_reaper_id_to_grid_coord: dict[Any, tuple[int, int]]
+    enemy_reaper_id_to_grid_coord: dict[int, tuple[int, int]]
     enemy_others_grid_state: GRID_COORD_UNIT_STATE_T
-    enemy_others_id_to_grid_coord: dict[Any, tuple[int, int]]
+    enemy_others_id_to_grid_coord: dict[int, tuple[int, int]]
 
 
 @dataclass

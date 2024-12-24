@@ -114,6 +114,7 @@ def get_default_enemies_relation() -> dict[tuple[str, str], list[Any]]:
 class ReaperActionTypes(Enum):
     """
     TODO: create multiple use super power categories
+    TODO: create a category to move close to tankers (can be useful when no wreck is available)
     """
 
     harvest_safe = 1

@@ -43,7 +43,7 @@ def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> 'BaseTracker':
 class BaseTracker(ABC):
 
     @abstractmethod
-    def track(self, player_reaper_unit, target_unit):
+    def track(self, player_reaper_unit: GridUnitState, target_unit: GridUnitState):
         pass
 
 

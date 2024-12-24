@@ -18,7 +18,7 @@ from python_prototypes.field_types import (
     GRID_COORD_UNIT_STATE_T,
 )
 from python_prototypes.field_tools import get_grid_position
-from python_prototypes.real_game_mocks.full_grid_state import get_example_full_grid_state
+from python_prototypes.real_game_mocks.full_grid_state import ExampleBasicScenarioIncomplete
 from python_prototypes.reaper.decision_maker import reaper_decider
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
 from python_prototypes.reaper.q_orchestrator import ReaperGameState
@@ -155,7 +155,7 @@ def original_game_main():
 class TestGameInputHandler:
 
     def test_get_example_full_grid_state(self):
-        game_grid_information = get_example_full_grid_state()
+        game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
         full_grid_state = game_grid_information.full_grid_state
 
         # print(full_grid_state)

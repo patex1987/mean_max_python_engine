@@ -45,10 +45,10 @@ class WaterRiskCategoriesRetriever:
         self.risk_limit = grid_squares // 25
         self.safe_limit = grid_squares
 
-    def get_category(self, enemy_manhattan_distance: int) -> WaterRiskCategories:
-        if enemy_manhattan_distance <= self.dangerous_limit:
+    def get_category(self, manhattan_distance: int) -> WaterRiskCategories:
+        if manhattan_distance <= self.dangerous_limit:
             return WaterRiskCategories.dangerous
-        if enemy_manhattan_distance <= self.risk_limit:
+        if manhattan_distance <= self.risk_limit:
             return WaterRiskCategories.risky
 
         return WaterRiskCategories.safe

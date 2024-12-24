@@ -71,7 +71,7 @@ def get_player_enemy_relation(
     player_state: PlayerState,
     wreck_id_to_grid_coords: dict[Any, tuple[int, int]],
     tanker_id_to_grid_coords: dict[Any, tuple[int, int]],
-) -> dict[tuple[str, str], int]:
+) -> dict[tuple[str, str], list[int]]:
     """
     Sometimes the reaper doesn't go for wrecks, neither tries to get close
     to reapers. It can try to ram into enemies. This relation mapping gives
@@ -101,7 +101,7 @@ def get_player_enemy_relation(
         )
         if closest_water_distance_category == DistanceCategories.far.name:
             continue
-        player_enemy_relations[(distance_category.name, closest_water_distance_category)] = 1
+        player_enemy_relations[(distance_category.name, closest_water_distance_category)].append(enemy_reaper_id)
 
     return player_enemy_relations
 
@@ -145,7 +145,7 @@ def get_tanker_enemy_relations(
     player_state: PlayerState,
     enemy_reaper_id_to_grid_coord: dict[Any, tuple[int, int]],
     enemy_others_grid_state: dict[Any, tuple[int, int]],
-) -> dict[tuple[str, str], int]:
+) -> dict[tuple[str, str], list[int]]:
     """
     The reaper can decide to get closer to tankers (because they can become
     wrecks potentially in the future)
@@ -169,7 +169,7 @@ def get_tanker_enemy_relations(
             enemy_reaper_id_coordinates=enemy_reaper_id_to_grid_coord,
             enemy_others_id_coordinates=enemy_others_grid_state,
         )
-        tanker_enemies_relation[(distance_category.name, closest_enemy_reaper_category)] = 1
+        tanker_enemies_relation[(distance_category.name, closest_enemy_reaper_category)].append(tanker_id)
 
     return tanker_enemies_relation
 
@@ -221,7 +221,7 @@ def get_water_enemy_relations(
     wreck_id_to_grid_coord: dict[Any, tuple[int, int]],
     player_state: PlayerState,
     enemy_id_to_grid_coord: dict[Any, tuple[int, int]],
-) -> dict[tuple[str, str], int]:
+) -> dict[tuple[str, str], list[int]]:
     """
     water reaper relation is keyed by the distance category and a riskiness
     of the given water (wreck)
@@ -252,7 +252,7 @@ def get_water_enemy_relations(
             enemy_object_id_coordinates=enemy_id_to_grid_coord,
         )
 
-        water_reaper_relation[(distance_category.name, closest_enemy_reaper_category)] = 1
+        water_reaper_relation[(distance_category.name, closest_enemy_reaper_category)].append(wreck_id)
 
     return water_reaper_relation
 
