@@ -7,6 +7,7 @@ class Entity(Enum):
     """
     TODO: this doesn't differentiate between player and enemies
     """
+
     REAPER = 0
     DESTROYER = 1
     DOOF = 2
@@ -70,6 +71,7 @@ class GameGridInformation:
     """
     right now recreated on every round
     """
+
     full_grid_state: GRID_COORD_UNIT_STATE_T
     wreck_grid_state: GRID_COORD_UNIT_STATE_T
     wreck_id_to_grid_coord: dict[Any, tuple[int, int]]
@@ -80,16 +82,16 @@ class GameGridInformation:
     enemy_others_grid_state: GRID_COORD_UNIT_STATE_T
     enemy_others_id_to_grid_coord: dict[Any, tuple[int, int]]
 
+
 @dataclass
 class PlayerState:
     """
     TODO: most probably other fields will be needed, but let's start with
         the bare minimum
     """
+
     reaper_state: GridUnitState
     destroyer_state: GridUnitState
     doof_state: GridUnitState
     rage: int
     score: int
-
-

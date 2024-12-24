@@ -12,8 +12,6 @@ SQUARE_SPLIT = FIELD_SIZE // SQUARE_COUNT
 WATER_TOWN_RADIUS = 3000
 
 
-
-
 def dot_product(x: float, y: float, vx: float, vy: float) -> float:
     return x * vx + y * vy
 

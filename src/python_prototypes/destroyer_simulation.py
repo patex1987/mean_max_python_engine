@@ -1,5 +1,3 @@
-
-
 import math
 import random
 from enum import Enum
@@ -72,12 +70,8 @@ def get_next_destroyer_state(
         best_path_available=True,
         skill_available=nitro_grenade_available,
     )
-    throttle_sequence = get_throttle_sequence_for_next_step(
-        current_destroyer_state, next_step, target_distance, v0
-    )
-    next_move_command_string = get_next_move_string(
-        next_step, target_object, throttle_sequence
-    )
+    throttle_sequence = get_throttle_sequence_for_next_step(current_destroyer_state, next_step, target_distance, v0)
+    next_move_command_string = get_next_move_string(next_step, target_object, throttle_sequence)
     return next_move_command_string
 
 
@@ -160,11 +154,7 @@ def find_tanker_target(
     return target_tanker_grid_position
 
 
-def get_next_move_string(
-    next_step: 'DestroyerDecisionResult',
-    target_object: GridUnitState,
-    throttle_sequence
-) -> str:
+def get_next_move_string(next_step: 'DestroyerDecisionResult', target_object: GridUnitState, throttle_sequence) -> str:
     match next_step:
         case DestroyerDecisionResult.FASTEST_PATH:
             move_string = '{} {} {} Destroyer'.format(

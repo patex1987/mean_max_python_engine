@@ -3,7 +3,6 @@ Categorization for distance and risk categories
 Can grow into a package in the future
 """
 
-
 from enum import Enum
 
 from python_prototypes.field_tools import SQUARE_COUNT
@@ -13,6 +12,7 @@ class DistanceCategories(Enum):
     close = 1
     medium = 2
     far = 3
+
 
 class DistanceCategoriesRetriever:
 
@@ -36,6 +36,7 @@ class WaterRiskCategories(Enum):
     risky = 2
     safe = 3
 
+
 class WaterRiskCategoriesRetriever:
 
     def __init__(self, square_count: int):
@@ -55,4 +56,3 @@ class WaterRiskCategoriesRetriever:
 
 DISTANCE_CATEGORY_RETRIEVER = DistanceCategoriesRetriever(SQUARE_COUNT)
 WATER_RISK_CATEGORY_RETRIEVER = WaterRiskCategoriesRetriever(SQUARE_COUNT)
-
