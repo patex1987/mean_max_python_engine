@@ -37,6 +37,12 @@ def get_goal_target_determiner(
             return super_power_target_available
         case ReaperActionTypes.wait:
             return no_op_target_available
+        case ReaperActionTypes.move_tanker_safe:
+            return no_op_target_available
+        case ReaperActionTypes.move_tanker_risky:
+            return no_op_target_available
+        case ReaperActionTypes.move_tanker_dangerous:
+            return no_op_target_available
         case _:
             raise ValueError(f'Invalid goal type: {current_goal_type}')
 

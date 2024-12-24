@@ -36,6 +36,12 @@ def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> 'BaseTracker':
             return NoOpTracker()
         case ReaperActionTypes.wait:
             return NoOpTracker()
+        case ReaperActionTypes.move_tanker_safe:
+            return DynamicTargetTracker()
+        case ReaperActionTypes.move_tanker_risky:
+            return DynamicTargetTracker()
+        case ReaperActionTypes.move_tanker_dangerous:
+            return DynamicTargetTracker()
         case _:
             raise ValueError(f'Invalid goal type: {reaper_goal_type}')
 

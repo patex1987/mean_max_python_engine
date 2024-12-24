@@ -128,6 +128,9 @@ class ReaperActionTypes(Enum):
     ram_other_far = 9
     use_super_power = 10
     wait = 11
+    move_tanker_safe = 12
+    move_tanker_risky = 13
+    move_tanker_dangerous = 14
 
 
 def get_default_reaper_actions_q_weights() -> dict[ReaperActionTypes, float]:
@@ -143,6 +146,9 @@ def get_default_reaper_actions_q_weights() -> dict[ReaperActionTypes, float]:
         ReaperActionTypes.ram_other_far: 0.0,
         ReaperActionTypes.use_super_power: 0.0,
         ReaperActionTypes.wait: 0.0,
+        ReaperActionTypes.move_tanker_safe: 0.0,
+        ReaperActionTypes.move_tanker_risky: 0.0,
+        ReaperActionTypes.move_tanker_dangerous: 0.0,
     }
     return reaper_actions_q_weights
 

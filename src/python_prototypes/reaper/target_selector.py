@@ -46,6 +46,12 @@ def get_target_id_selector(
             return partial(select_water_target_by_risk_level, risk_level='safe')
         case ReaperActionTypes.wait:
             return no_op_target_selector
+        case ReaperActionTypes.move_tanker_safe:
+            return no_op_target_selector
+        case ReaperActionTypes.move_tanker_risky:
+            return no_op_target_selector
+        case ReaperActionTypes.move_tanker_dangerous:
+            return no_op_target_selector
         case _:
             raise ValueError(f'Invalid goal type: {reaper_goal_type}')
 

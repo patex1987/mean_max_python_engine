@@ -25,5 +25,11 @@ def get_goal_reached_determiner(current_goal: ReaperActionTypes):
             return
         case ReaperActionTypes.wait:
             return
+        case ReaperActionTypes.move_tanker_safe:
+            return
+        case ReaperActionTypes.move_tanker_risky:
+            return
+        case ReaperActionTypes.move_tanker_dangerous:
+            return
         case _:
             raise ValueError(f'Invalid goal type: {current_goal}')

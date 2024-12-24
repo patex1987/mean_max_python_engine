@@ -25,6 +25,12 @@ def get_goal_possibility_determiner(current_goal: ReaperActionTypes):
             return super_power_possible
         case ReaperActionTypes.wait:
             return no_op_possible
+        case ReaperActionTypes.move_tanker_safe:
+            return no_op_possible
+        case ReaperActionTypes.move_tanker_risky:
+            return no_op_possible
+        case ReaperActionTypes.move_tanker_dangerous:
+            return no_op_possible
         case _:
             raise ValueError(f'Invalid goal type: {current_goal}')
 
