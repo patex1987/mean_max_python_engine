@@ -26,11 +26,11 @@ def get_goal_possibility_determiner(current_goal: ReaperActionTypes):
         case ReaperActionTypes.wait:
             return no_op_possible
         case ReaperActionTypes.move_tanker_safe:
-            return no_op_possible
+            return safe_tanker_possible
         case ReaperActionTypes.move_tanker_risky:
-            return no_op_possible
+            return risky_tanker_possible
         case ReaperActionTypes.move_tanker_dangerous:
-            return no_op_possible
+            return dangerous_tanker_possible
         case _:
             raise ValueError(f'Invalid goal type: {current_goal}')
 
@@ -120,6 +120,45 @@ def far_other_enemy_possible(reaper_q_state: ReaperQState) -> bool:
 
 def super_power_possible(reaper_q_state: ReaperQState) -> bool:
     available = reaper_q_state.super_power_available
+    return available
+
+
+def safe_tanker_possible(reaper_q_state: ReaperQState) -> bool:
+    """
+    :param reaper_q_state:
+    :return:
+    """
+    available = (
+        reaper_q_state.tanker_enemy_state.get(('close', 'safe'), 0) > 0
+        or reaper_q_state.tanker_enemy_state.get(('medium', 'safe'), 0) > 0
+        or reaper_q_state.tanker_enemy_state.get(('far', 'safe'), 0) > 0
+    )
+    return available
+
+
+def risky_tanker_possible(reaper_q_state: ReaperQState) -> bool:
+    """
+    :param reaper_q_state:
+    :return:
+    """
+    available = (
+        reaper_q_state.tanker_enemy_state.get(('close', 'risky'), 0) > 0
+        or reaper_q_state.tanker_enemy_state.get(('medium', 'risky'), 0) > 0
+        or reaper_q_state.tanker_enemy_state.get(('far', 'risky'), 0) > 0
+    )
+    return available
+
+
+def dangerous_tanker_possible(reaper_q_state: ReaperQState) -> bool:
+    """
+    :param reaper_q_state:
+    :return:
+    """
+    available = (
+        reaper_q_state.tanker_enemy_state.get(('close', 'dangerous'), 0) > 0
+        or reaper_q_state.tanker_enemy_state.get(('medium', 'dangerous'), 0) > 0
+        or reaper_q_state.tanker_enemy_state.get(('far', 'dangerous'), 0) > 0
+    )
     return available
 
 
