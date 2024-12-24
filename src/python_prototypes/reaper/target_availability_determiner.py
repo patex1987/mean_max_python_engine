@@ -113,6 +113,7 @@ def tanker_target_available(
 
     return TargetAvailabilityState.valid
 
+
 def no_op_target_available(
     goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
 ) -> TargetAvailabilityState:
