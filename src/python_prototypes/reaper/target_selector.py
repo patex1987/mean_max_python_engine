@@ -6,7 +6,12 @@ from python_prototypes.reaper.exception_types import ImpossibleTarget
 from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTypes
 
 
-def get_target_selector(reaper_goal_type: ReaperActionTypes) -> Callable[[ReaperQState], int | None]:
+def get_target_id_selector(reaper_goal_type: ReaperActionTypes) -> Callable[[ReaperQState], int | None]:
+    """
+
+    :param reaper_goal_type:
+    :return: the callable returns the id of the target object (if available)
+    """
     match reaper_goal_type:
         case ReaperActionTypes.harvest_safe:
             return partial(select_water_target_by_risk_level, risk_level='safe')

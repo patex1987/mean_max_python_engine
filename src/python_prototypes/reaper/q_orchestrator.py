@@ -15,11 +15,12 @@ from python_prototypes.reaper.q_state_types import (
     get_default_reaper_actions_q_weights,
     ReaperActionsQWeights,
     get_default_water_relations,
-    get_default_enemies_relation, ReaperActionTypes,
+    get_default_enemies_relation,
+    ReaperActionTypes,
 )
 from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner
 from python_prototypes.reaper.target_reached_determiner import get_goal_reached_determiner
-from python_prototypes.reaper.target_selector import get_target_selector
+from python_prototypes.reaper.target_selector import get_target_id_selector
 from python_prototypes.reaper.target_tracker_determiner import get_target_tracker
 
 
@@ -118,13 +119,13 @@ class ReaperGameState:
         is_reached = reachability_determiner(self._reaper_q_state)
         return is_reached
 
-    def initialize_new_target(self, reaper_goal_type: ReaperActionTypes, reaper_q_state: ReaperQState):
+    def initialize_new_target(self, reaper_goal_type: ReaperActionTypes, reaper_q_state: ReaperQState) -> int | None:
         target_tracker = get_target_tracker(reaper_goal_type)
         self._target_tracker = target_tracker
-        target_selector = get_target_selector(reaper_goal_type)
-        target = target_selector(reaper_q_state)
-        self._current_target_entity = target
-        return target
+        target_id_selector = get_target_id_selector(reaper_goal_type)
+        target_id = target_id_selector(reaper_q_state)
+        self._current_target_unit_id = target_id
+        return target_id
 
 
 def get_goal_failure_penalty(current_goal: str) -> float:
