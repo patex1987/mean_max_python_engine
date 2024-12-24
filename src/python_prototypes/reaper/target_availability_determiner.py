@@ -38,11 +38,11 @@ def get_goal_target_determiner(
         case ReaperActionTypes.wait:
             return no_op_target_available
         case ReaperActionTypes.move_tanker_safe:
-            return no_op_target_available
+            return tanker_target_available
         case ReaperActionTypes.move_tanker_risky:
-            return no_op_target_available
+            return tanker_target_available
         case ReaperActionTypes.move_tanker_dangerous:
-            return no_op_target_available
+            return tanker_target_available
         case _:
             raise ValueError(f'Invalid goal type: {current_goal_type}')
 
@@ -96,6 +96,22 @@ def super_power_target_available(
 ) -> TargetAvailabilityState:
     pass
 
+
+def tanker_target_available(
+    goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
+) -> TargetAvailabilityState:
+    """
+    :param goal_type:
+    :param goal_target_obj:
+    :return:
+
+    TODO: water is within wrecks
+    """
+    does_it_still_exist()
+    are_we_getting_closer()
+    rounds_limit_reached()
+
+    return TargetAvailabilityState.valid
 
 def no_op_target_available(
     goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
