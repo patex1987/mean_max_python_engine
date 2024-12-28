@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+from enum import Enum
+
+
 from python_prototypes.field_types import GameGridInformation, PlayerState, GridUnitState, Unit, Entity
 from python_prototypes.real_game_mocks.full_grid_state import ExampleBasicScenarioIncomplete
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
@@ -11,19 +15,35 @@ from python_prototypes.reaper.q_state_types import (
 from python_prototypes.reaper.target_selector import SelectedTargetInformation
 
 
+class ReaperDecisionType(Enum):
+    new_target = 0
+    existing_target = 1
+    replan_existing_target = 2
+
+
+@dataclass
+class ReaperDecisionOutput:
+    decision_type: ReaperDecisionType
+    goal_action_type: ReaperActionTypes
+    target_grid_unit: GridUnitState | None
+
+
 def reaper_decider(
     reaper_game_state: ReaperGameState,
     reaper_q_state: ReaperQState,
     game_grid_information: GameGridInformation,
     player_state: PlayerState,
-) -> tuple[ReaperActionTypes, SelectedTargetInformation | None]:
+) -> ReaperDecisionOutput:
     """
+    this determines the what (i.e. what to do), but doesn't determine the
+    how (i.e. doesn't determine what path, steps to take to get there)
 
     :param reaper_game_state:
     :param reaper_q_state:
     :param game_grid_information:
     :param player_state:
     :return: tuple[ goal_type, target unit ]
+    # TODO: add the actualized grid unit state of the target to the resulting object
     """
     on_mission = reaper_game_state.is_on_mission()
 
@@ -34,7 +54,7 @@ def reaper_decider(
         )
 
         if not new_target:
-            return new_reaper_goal_type, new_target
+            return ReaperDecisionOutput(ReaperDecisionType.new_target, new_reaper_goal_type, None)
         target_grid_unit_state = find_target_grid_unit_state(
             game_grid_information=game_grid_information,
             target=new_target,
@@ -43,13 +63,20 @@ def reaper_decider(
         reaper_game_state._target_tracker.track(
             player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
         )
-        return new_reaper_goal_type, new_target
+        return ReaperDecisionOutput(ReaperDecisionType.new_target, new_reaper_goal_type, target_grid_unit_state)
 
     current_goal_type = reaper_game_state.current_goal_type
+    current_target = reaper_game_state._current_target_info
     # TODO: rethink this, maybe here we can just check if the target still exists. or we can
     #   or we can do both existence validation and use some evaluations based on the tracker
     #   (as we originally planned)
-    is_target_available = reaper_game_state.is_goal_target_available()
+    actual_target_grid_unit_state = find_target_grid_unit_state(
+        game_grid_information=game_grid_information,
+        target=current_target,
+    )
+    is_target_available = reaper_game_state.is_goal_target_available(
+        current_target, reaper_q_state, game_grid_information
+    )
     if not is_target_available:
         reaper_game_state.propagate_failed_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
@@ -57,7 +84,7 @@ def reaper_decider(
             reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
         )
         reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)
-        return new_reaper_goal_type, new_target
+        return ReaperDecisionOutput(ReaperDecisionType.new_target, new_reaper_goal_type, new_target)
 
     goal_reached = reaper_game_state.is_goal_reached(current_goal_type)
     if goal_reached:
@@ -67,9 +94,9 @@ def reaper_decider(
             reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
         )
         reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)
-        return new_reaper_goal_type, new_target
+        return ReaperDecisionOutput(ReaperDecisionType.new_target, new_reaper_goal_type, new_target)
 
-    curent_target = reaper_game_state._current_target_unit_id
+    curent_target = reaper_game_state._current_target_info
     reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)
     reaper_game_state.apply_step_penalty()
     reaper_game_state.add_current_step_to_mission()
@@ -102,14 +129,15 @@ class TestReaperDecider:
         )
         reaper_game_state = ReaperGameState()
         reaper_game_state.exploration_rate = 0.0
-        new_reaper_goal_type, new_target = reaper_decider(
+        decision_output = reaper_decider(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
             player_state=player_state,
         )
-        assert new_reaper_goal_type == ReaperActionTypes.wait
-        assert new_target is None
+        assert decision_output.goal_action_type == ReaperActionTypes.wait
+        assert decision_output.target_grid_unit is None
+        assert decision_output.decision_type == ReaperDecisionType.new_target
 
     def test_not_on_a_mission_random_goal_selected(self):
         """
@@ -125,7 +153,7 @@ class TestReaperDecider:
 
         reaper_game_state = ReaperGameState()
         reaper_game_state.exploration_rate = 0.0
-        new_reaper_goal_type, new_target = reaper_decider(
+        decision_output = reaper_decider(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
@@ -133,10 +161,11 @@ class TestReaperDecider:
         )
 
         assert reaper_game_state.is_on_mission() is True
-        if new_reaper_goal_type == ReaperActionTypes.wait:
-            assert new_target is None
+        if decision_output.goal_action_type == ReaperActionTypes.wait:
+            assert decision_output.target_grid_unit is None
             return
 
-        assert new_reaper_goal_type != ReaperActionTypes.wait
-        assert new_target is not None
-        assert isinstance(new_target, SelectedTargetInformation)
+        assert decision_output.goal_action_type != ReaperActionTypes.wait
+        assert decision_output.target_grid_unit is not None
+        assert isinstance(decision_output.target_grid_unit, GridUnitState)
+        assert decision_output.decision_type == ReaperDecisionType.new_target

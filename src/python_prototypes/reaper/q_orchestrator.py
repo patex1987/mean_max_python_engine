@@ -32,8 +32,8 @@ class ReaperGameState:
     def __init__(self):
         self.current_goal_type = None
         self._mission_set = False
+        self._current_target_info: SelectedTargetInformation | None = None
         self._current_target_entity_type = None
-        self._current_target_unit_id = None
         self._current_mission_steps = []
         self._q_table = {}
         self._target_tracker: BaseTracker | None = None
@@ -49,7 +49,7 @@ class ReaperGameState:
         return new_goal
 
     def update_existing_target_entity(self, target_unit_id, updated_grid_state: GridUnitState = None):
-        if target_unit_id != self._current_target_unit_id:
+        if target_unit_id != self._current_target_info.id:
             raise ValueError('You are attempting to update a target, there is a different method for that')
         if target_unit_id != updated_grid_state.unit.unit_id:
             raise ValueError('You are attempting to update a target, where the id and the id in the grid_state differs')
@@ -111,9 +111,9 @@ class ReaperGameState:
         is_possible = goal_possibility_determiner(reaper_q_state)
         return is_possible
 
-    def is_goal_target_available(self) -> bool:
+    def is_goal_target_available(self, current_target, reaper_q_state) -> bool:
         goal_target_determiner = get_goal_target_determiner(self.current_goal_type)
-        is_available = goal_target_determiner(self._reaper_q_state, self._current_target_entity_type)
+        is_available = goal_target_determiner(reaper_q_state, current_target.type)
         return is_available
 
     def propagate_successful_goal(self):
@@ -136,8 +136,7 @@ class ReaperGameState:
         selected_target = target_id_selector(reaper_q_state)
         if not selected_target:
             return None
-        self._current_target_unit_id = selected_target.id
-        self._current_target_entity_type = selected_target.type
+        self._current_target_info = selected_target
         return selected_target
 
 
