@@ -52,6 +52,22 @@ class BaseTracker(ABC):
     def track(self, player_reaper_unit: GridUnitState, target_unit: GridUnitState):
         pass
 
+    @abstractmethod
+    def total_round_threshold_breached(self, round_threshold: int) -> bool:
+        pass
+
+    @abstractmethod
+    def is_distance_growing(self, round_threshold: int) -> bool:
+        pass
+
+    @abstractmethod
+    def actual_distance(self) -> float:
+        pass
+
+    @abstractmethod
+    def is_target_within_threshold(self, threshold: float) -> bool:
+        pass
+
 
 class StaticTargetTracker(BaseTracker):
 
@@ -77,6 +93,22 @@ class StaticTargetTracker(BaseTracker):
     @property
     def steps_taken(self):
         return len(self.manhattan_distances_from_target)
+
+    def is_distance_growing(self, round_threshold: int) -> bool:
+        if len(self.manhattan_distance_changes) < round_threshold:
+            return False
+        last_n_changes = self.euclidean_distance_changes[:-round_threshold]
+        is_growing = all(x >= 0 for x in last_n_changes)
+        return is_growing
+
+    def total_round_threshold_breached(self, round_threshold: int) -> bool:
+        return len(self.manhattan_distance_changes) >= round_threshold
+
+    def actual_distance(self) -> float:
+        return self.manhattan_distances_from_target[-1]
+
+    def is_target_within_threshold(self, threshold: float) -> bool:
+        return self.manhattan_distances_from_target[-1] <= threshold
 
 
 class DynamicTargetTracker(BaseTracker):
@@ -107,6 +139,22 @@ class DynamicTargetTracker(BaseTracker):
     def steps_taken(self):
         return len(self.manhattan_distances_from_target)
 
+    def is_distance_growing(self, round_threshold: int) -> bool:
+        if len(self.manhattan_distance_changes) < round_threshold:
+            return False
+        last_n_changes = self.euclidean_distance_changes[:-round_threshold]
+        is_growing = all(x >= 0 for x in last_n_changes)
+        return is_growing
+
+    def total_round_threshold_breached(self, round_threshold: int) -> bool:
+        return len(self.manhattan_distance_changes) >= round_threshold
+
+    def actual_distance(self) -> float:
+        return self.manhattan_distances_from_target[-1]
+
+    def is_target_within_threshold(self, threshold: float) -> bool:
+        return self.manhattan_distances_from_target[-1] <= threshold
+
 
 class NoOpTracker(BaseTracker):
     def track(self, player_reaper_unit: GridUnitState, target_unit: GridUnitState):
@@ -115,3 +163,15 @@ class NoOpTracker(BaseTracker):
     @property
     def steps_taken(self):
         return 0
+
+    def is_distance_growing(self, round_threshold: int) -> bool:
+        return True
+
+    def total_round_threshold_breached(self, round_threshold: int) -> bool:
+        return True
+
+    def actual_distance(self) -> float:
+        return 0.0
+
+    def is_target_within_threshold(self, threshold: float) -> bool:
+        return True

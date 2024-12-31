@@ -67,16 +67,11 @@ def reaper_decider(
 
     current_goal_type = reaper_game_state.current_goal_type
     current_target = reaper_game_state._current_target_info
-    # TODO: rethink this, maybe here we can just check if the target still exists. or we can
-    #   or we can do both existence validation and use some evaluations based on the tracker
-    #   (as we originally planned)
     actual_target_grid_unit_state = find_target_grid_unit_state(
         game_grid_information=game_grid_information,
         target=current_target,
     )
-    is_target_available = reaper_game_state.is_goal_target_available(
-        current_target, reaper_q_state, game_grid_information
-    )
+    is_target_available = reaper_game_state.is_goal_target_available()
     if not is_target_available:
         reaper_game_state.propagate_failed_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
@@ -101,7 +96,7 @@ def reaper_decider(
     reaper_game_state.apply_step_penalty()
     reaper_game_state.add_current_step_to_mission()
 
-    return current_goal_type
+    return ReaperDecisionOutput(ReaperDecisionType.existing_target, current_goal_type, actual_target_grid_unit_state)
 
 
 class TestReaperDecider:
@@ -169,3 +164,6 @@ class TestReaperDecider:
         assert decision_output.target_grid_unit is not None
         assert isinstance(decision_output.target_grid_unit, GridUnitState)
         assert decision_output.decision_type == ReaperDecisionType.new_target
+
+    def test_target_does_not_exist_anymore(self):
+        pass

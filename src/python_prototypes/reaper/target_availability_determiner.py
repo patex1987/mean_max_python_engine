@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import Callable, Any
 
-from python_prototypes.field_types import GridUnitState, GRID_COORD_UNIT_STATE_T
+from python_prototypes.field_types import GridUnitState, GRID_COORD_UNIT_STATE_T, GameGridInformation
 from python_prototypes.reaper.q_state_types import ReaperActionTypes
+from python_prototypes.reaper.target_tracker_determiner import BaseTracker
 
 
 class TargetAvailabilityState(Enum):
@@ -48,33 +49,44 @@ def get_goal_target_determiner(
 
 
 def water_target_available(
-    goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
+    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     """
-    :param goal_type:
     :param goal_target_obj:
+    :param game_grid_information:
+    :param target_tracker:
     :return:
 
     TODO: water is within wrecks
     """
     wreck_id = goal_target_obj.unit.unit_id
-    wreck_coordinate = goal_target_obj.grid_coordinate
-    grid_states = full_grid_state.get(wreck_coordinate, None)
-    if not grid_states:
+    _wreck_coordinate = goal_target_obj.grid_coordinate
+
+    if not game_grid_information.wreck_id_to_grid_coord:
         return TargetAvailabilityState.invalid
 
-    wreck_still_valid = any((grid_state.unit.unit_id == wreck_id for grid_state in grid_states))
-    if not wreck_still_valid:
+    if wreck_id not in game_grid_information.wreck_id_to_grid_coord:
         return TargetAvailabilityState.invalid
 
-    are_we_getting_closer()
-    rounds_limit_reached()
+    # TODO: move these to some constants, so they are easily configurable
+    replan_round_threshold = 3
+    total_round_threshold = 10
+    target_distance_threshold = 25  # not sure about this, depends on the radius of the wreck
+
+    if target_tracker.total_round_threshold_breached(total_round_threshold):
+        return TargetAvailabilityState.invalid
+
+    if target_tracker.is_distance_growing(replan_round_threshold):
+        return TargetAvailabilityState.replan_reach
+
+    if not target_tracker.is_target_within_threshold(target_distance_threshold):
+        return TargetAvailabilityState.valid
 
     return TargetAvailabilityState.valid
 
 
 def ram_reaper_target_available(
-    goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
+    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker 
 ) -> TargetAvailabilityState:
     enemy_reaper_id = goal_target_obj.unit.unit_id
     are_we_getting_closer()

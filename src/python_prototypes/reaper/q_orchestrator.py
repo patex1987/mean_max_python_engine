@@ -18,7 +18,7 @@ from python_prototypes.reaper.q_state_types import (
     get_default_enemies_relation,
     ReaperActionTypes,
 )
-from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner
+from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner, TargetAvailabilityState
 from python_prototypes.reaper.target_reached_determiner import get_goal_reached_determiner
 from python_prototypes.reaper.target_selector import get_target_id_selector, SelectedTargetInformation
 from python_prototypes.reaper.target_tracker_determiner import get_target_tracker, BaseTracker
@@ -111,7 +111,9 @@ class ReaperGameState:
         is_possible = goal_possibility_determiner(reaper_q_state)
         return is_possible
 
-    def is_goal_target_available(self, current_target, reaper_q_state) -> bool:
+    def is_goal_target_available(
+        self,
+    ) -> TargetAvailabilityState:
         goal_target_determiner = get_goal_target_determiner(self.current_goal_type)
         is_available = goal_target_determiner(reaper_q_state, current_target.type)
         return is_available
@@ -135,6 +137,7 @@ class ReaperGameState:
         target_id_selector = get_target_id_selector(reaper_goal_type)
         selected_target = target_id_selector(reaper_q_state)
         if not selected_target:
+            self._current_target_info = None
             return None
         self._current_target_info = selected_target
         return selected_target
