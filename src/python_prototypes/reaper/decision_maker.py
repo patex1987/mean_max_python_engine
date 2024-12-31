@@ -16,9 +16,11 @@ from python_prototypes.reaper.target_selector import SelectedTargetInformation
 
 
 class ReaperDecisionType(Enum):
-    new_target = 0
-    existing_target = 1
-    replan_existing_target = 2
+    new_target_on_failure = 0
+    new_target_on_undefined = 1
+    new_target_on_success = 2
+    existing_target = 3
+    replan_existing_target = 4
 
 
 @dataclass
@@ -63,7 +65,9 @@ def reaper_decider(
         reaper_game_state._target_tracker.track(
             player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
         )
-        return ReaperDecisionOutput(ReaperDecisionType.new_target, new_reaper_goal_type, target_grid_unit_state)
+        return ReaperDecisionOutput(
+            ReaperDecisionType.new_target_on_undefined, new_reaper_goal_type, target_grid_unit_state
+        )
 
     current_goal_type = reaper_game_state.current_goal_type
     current_target = reaper_game_state._current_target_info
@@ -79,7 +83,7 @@ def reaper_decider(
             reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
         )
         reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)
-        return ReaperDecisionOutput(ReaperDecisionType.new_target, new_reaper_goal_type, new_target)
+        return ReaperDecisionOutput(ReaperDecisionType.new_target_on_failure, new_reaper_goal_type, new_target)
 
     goal_reached = reaper_game_state.is_goal_reached(current_goal_type)
     if goal_reached:
@@ -89,7 +93,7 @@ def reaper_decider(
             reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
         )
         reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)
-        return ReaperDecisionOutput(ReaperDecisionType.new_target, new_reaper_goal_type, new_target)
+        return ReaperDecisionOutput(ReaperDecisionType.new_target_on_success, new_reaper_goal_type, new_target)
 
     curent_target = reaper_game_state._current_target_info
     reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)

@@ -86,7 +86,7 @@ def water_target_available(
 
 
 def ram_reaper_target_available(
-    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker 
+    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     enemy_reaper_id = goal_target_obj.unit.unit_id
     are_we_getting_closer()
