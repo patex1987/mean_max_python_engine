@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Callable, Any
 
-from python_prototypes.field_types import GridUnitState, GRID_COORD_UNIT_STATE_T, GameGridInformation
+from python_prototypes.field_types import GridUnitState, GRID_COORD_UNIT_STATE_T, GameGridInformation, Entity
 from python_prototypes.reaper.q_state_types import ReaperActionTypes
 from python_prototypes.reaper.target_tracker_determiner import BaseTracker
 
@@ -146,13 +146,29 @@ def ram_target_obj_available(
 
 
 def super_power_target_available(
-    goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
+    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
-    pass
+    target_obj_id = goal_target_obj.unit.unit_id
+    enemy_target_coordinate = goal_target_obj.grid_coordinate
+
+    target_obj_type_raw = goal_target_obj.unit.unit_type
+    target_obj_type = Entity[target_obj_type_raw]
+
+    match target_obj_type:
+        case Entity.REAPER:
+            if target_obj_id not in game_grid_information.enemy_reaper_id_to_grid_coord:
+                return TargetAvailabilityState.invalid
+            return TargetAvailabilityState.goal_reached_success
+        case Entity.OTHER_ENEMY:
+            if target_obj_id not in game_grid_information.enemy_others_id_to_grid_coord:
+                return TargetAvailabilityState.invalid
+            return TargetAvailabilityState.goal_reached_success
+        case _:
+            return TargetAvailabilityState.invalid
 
 
 def tanker_target_available(
-    goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
+    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     """
     :param goal_type:
@@ -171,4 +187,13 @@ def tanker_target_available(
 def no_op_target_available(
     goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
 ) -> TargetAvailabilityState:
+    """
+
+    :param goal_type:
+    :param goal_target_obj:
+    :param full_grid_state:
+    :return:
+
+    TODO: check if it works with wait, and doesn't cause an infinite loop
+    """
     return TargetAvailabilityState.valid
