@@ -30,7 +30,7 @@ class ReaperGameState:
     """
 
     def __init__(self):
-        self.current_goal_type = None
+        self.current_goal_type:  ReaperActionTypes | None = None
         self._mission_set = False
         self._current_target_info: SelectedTargetInformation | None = None
         self._current_target_entity_type = None
@@ -113,7 +113,12 @@ class ReaperGameState:
 
     def get_goal_target_availability(
         self,
+        target_grid_unit: GridUnitState | None,
+        game_grid_information: GameGridInformation,
+        tracker: BaseTracker = None,
     ) -> TargetAvailabilityState:
+        if not target_grid_unit:
+            return TargetAvailabilityState.invalid
         goal_target_determiner = get_goal_target_determiner(self.current_goal_type)
         is_available = goal_target_determiner(target_grid_unit, game_grid_information, tracker)
         return is_available
@@ -163,26 +168,43 @@ def get_goal_success_reward(current_goal: str) -> float:
 
 def find_target_grid_unit_state(
     game_grid_information: GameGridInformation, target: SelectedTargetInformation
-) -> GridUnitState:
+) -> GridUnitState | None:
     match target.type:
         case Entity.WRECK:
+            if target.id not in game_grid_information.wreck_id_to_grid_coord:
+                return None
             wreck_grid_coordinate = game_grid_information.wreck_id_to_grid_coord[target.id]
             possible_wrecks = game_grid_information.wreck_grid_state[wreck_grid_coordinate]
             for wreck in possible_wrecks:
                 if wreck.unit.unit_id == target.id:
                     return wreck
         case Entity.REAPER:
+            if target.id not in game_grid_information.enemy_reaper_id_to_grid_coord:
+                return None
             reaper_grid_coordinate = game_grid_information.enemy_reaper_id_to_grid_coord[target.id]
             possible_reapers = game_grid_information.enemy_reaper_grid_state[reaper_grid_coordinate]
             for reaper in possible_reapers:
                 if reaper.unit.unit_id == target.id:
                     return reaper
+            return None
         case Entity.OTHER_ENEMY:
+            if target.id not in game_grid_information.enemy_others_id_to_grid_coord:
+                return None
             other_grid_coordinate = game_grid_information.enemy_others_id_to_grid_coord[target.id]
             possible_other_enemies = game_grid_information.enemy_others_grid_state[other_grid_coordinate]
             for other_enemy in possible_other_enemies:
                 if other_enemy.unit.unit_id == target.id:
                     return other_enemy
+            return None
+        case Entity.TANKER:
+            if target.id not in game_grid_information.tanker_id_to_grid_coord:
+                return None
+            tanker_grid_coordinate = game_grid_information.tanker_id_to_grid_coord[target.id]
+            possible_tankers = game_grid_information.tanker_grid_state[tanker_grid_coordinate]
+            for tanker in possible_tankers:
+                if tanker.unit.unit_id == target.id:
+                    return tanker
+            return None
         case _:
             raise ValueError(f'Unknown target type: {target.type}')
 

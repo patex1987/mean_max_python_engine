@@ -176,7 +176,7 @@ def tanker_target_available(
     :param target_tracker:
     :return:
 
-    TODO: water is within wrecks
+    TODO: we need somehow detect when a tanker turned into a wreck
     """
     tanker_id = goal_target_obj.unit.unit_id
     tanker_coordinate = goal_target_obj.grid_coordinate
@@ -190,7 +190,7 @@ def tanker_target_available(
     # TODO: move these to some constants, so they are easily configurable
     replan_round_threshold = 3
     total_round_threshold = 15
-    target_distance_threshold = 25  # not sure about this, depends on the radius of the tanker
+    target_distance_threshold = 50  # not sure about this, depends on the radius of the tanker
 
     if target_tracker.total_round_threshold_breached(total_round_threshold):
         return TargetAvailabilityState.invalid
@@ -198,17 +198,22 @@ def tanker_target_available(
     if target_tracker.is_distance_growing(replan_round_threshold):
         return TargetAvailabilityState.replan_reach
 
+    # TODO: see the TODO above in the docstring, we need to find a way if
+    #  a tanker turned into a wreck
+    if target_tracker.is_target_within_threshold(target_distance_threshold):
+        return TargetAvailabilityState.goal_reached_success
+
     return TargetAvailabilityState.valid
 
 
 def no_op_target_available(
-    goal_type: str, goal_target_obj: GridUnitState, full_grid_state: GRID_COORD_UNIT_STATE_T
+    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     """
 
-    :param goal_type:
     :param goal_target_obj:
-    :param full_grid_state:
+    :param game_grid_information:
+    :param target_tracker:
     :return:
 
     TODO: check if it works with wait, and doesn't cause an infinite loop

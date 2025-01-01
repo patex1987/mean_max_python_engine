@@ -57,7 +57,7 @@ def reaper_decider(
         )
 
         if not new_target:
-            return ReaperDecisionOutput(ReaperDecisionType.new_target, new_reaper_goal_type, None)
+            return ReaperDecisionOutput(ReaperDecisionType.new_target_on_undefined, new_reaper_goal_type, None)
         target_grid_unit_state = find_target_grid_unit_state(
             game_grid_information=game_grid_information,
             target=new_target,
@@ -71,16 +71,25 @@ def reaper_decider(
         )
 
     current_goal_type = reaper_game_state.current_goal_type
+    # if current_goal_type == ReaperActionTypes.wait:
+    #     return ReaperDecisionOutput(ReaperDecisionType.existing_target, current_goal_type, None)
     current_target = reaper_game_state._current_target_info
-    actual_target_grid_unit_state = find_target_grid_unit_state(
-        game_grid_information=game_grid_information,
-        target=current_target,
-    )
+    actual_target_grid_unit_state = None
+    if current_target:
+        actual_target_grid_unit_state = find_target_grid_unit_state(
+            game_grid_information=game_grid_information,
+            target=current_target,
+        )
 
     # TODO: change is_goal_target_available's return `TargetAvailabilityState` to tell if the goal was reached
-    target_availability = reaper_game_state.get_goal_target_availability()
+    target_availability = reaper_game_state.get_goal_target_availability(
+        target_grid_unit=actual_target_grid_unit_state,
+        game_grid_information=game_grid_information,
+        tracker=reaper_game_state._target_tracker,
+    )
     if target_availability == TargetAvailabilityState.invalid:
-        reaper_game_state.propagate_failed_goal()
+        if current_goal_type !=  ReaperActionTypes.wait:
+            reaper_game_state.propagate_failed_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
         new_target = reaper_game_state.initialize_new_target(
             reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
@@ -151,7 +160,7 @@ class TestReaperDecider:
         )
         assert decision_output.goal_action_type == ReaperActionTypes.wait
         assert decision_output.target_grid_unit is None
-        assert decision_output.decision_type == ReaperDecisionType.new_target
+        assert decision_output.decision_type == ReaperDecisionType.new_target_on_undefined
 
     def test_not_on_a_mission_random_goal_selected(self):
         """
@@ -182,7 +191,61 @@ class TestReaperDecider:
         assert decision_output.goal_action_type != ReaperActionTypes.wait
         assert decision_output.target_grid_unit is not None
         assert isinstance(decision_output.target_grid_unit, GridUnitState)
-        assert decision_output.decision_type == ReaperDecisionType.new_target
+        assert decision_output.decision_type == ReaperDecisionType.new_target_on_undefined
 
     def test_target_does_not_exist_anymore(self):
-        pass
+        """
+        the selected target doesn't exist anymore, so it should be marked
+        as invalid in the result
+        """
+        game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
+        player_state = ExampleBasicScenarioIncomplete.get_example_player_state()
+        reaper_q_state = calculate_reaper_q_state(
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )
+
+        reaper_game_state = ReaperGameState()
+        reaper_game_state._mission_set = True
+        reaper_game_state.current_goal_type = ReaperActionTypes.harvest_safe
+        reaper_game_state._current_target_info = SelectedTargetInformation(
+            id=12345,
+            type=Entity.WRECK
+        )
+
+        decision_output = reaper_decider(
+            reaper_game_state=reaper_game_state,
+            reaper_q_state=reaper_q_state,
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )
+
+        assert decision_output.decision_type == ReaperDecisionType.new_target_on_failure
+        assert decision_output.goal_action_type is not None
+
+    def test_wait_goal_target_availability_checking(self):
+        """
+        the selected goal is wait, and it should be valid only for one
+        round i.e. in one round the user does wait, and then it should
+        be invalidated in the next round
+        """
+        game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
+        player_state = ExampleBasicScenarioIncomplete.get_example_player_state()
+        reaper_q_state = calculate_reaper_q_state(
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )
+
+        reaper_game_state = ReaperGameState()
+        reaper_game_state._mission_set = True
+        reaper_game_state.current_goal_type = ReaperActionTypes.wait
+
+        decision_output = reaper_decider(
+            reaper_game_state=reaper_game_state,
+            reaper_q_state=reaper_q_state,
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )
+
+        assert decision_output.decision_type == ReaperDecisionType.new_target_on_failure
+        assert decision_output.goal_action_type is not None
