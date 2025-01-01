@@ -12,6 +12,7 @@ from python_prototypes.reaper.q_state_types import (
     get_default_water_relations,
     get_default_enemies_relation,
 )
+from python_prototypes.reaper.target_availability_determiner import TargetAvailabilityState
 from python_prototypes.reaper.target_selector import SelectedTargetInformation
 
 
@@ -75,28 +76,42 @@ def reaper_decider(
         game_grid_information=game_grid_information,
         target=current_target,
     )
-    is_target_available = reaper_game_state.is_goal_target_available()
-    if not is_target_available:
+
+    # TODO: change is_goal_target_available's return `TargetAvailabilityState` to tell if the goal was reached
+    target_availability = reaper_game_state.get_goal_target_availability()
+    if target_availability == TargetAvailabilityState.invalid:
         reaper_game_state.propagate_failed_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
         new_target = reaper_game_state.initialize_new_target(
             reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
         )
-        reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)
+        target_grid_unit_state = find_target_grid_unit_state(
+            game_grid_information=game_grid_information,
+            target=new_target,
+        )
+        reaper_game_state._target_tracker.track(
+            player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
+        )
         return ReaperDecisionOutput(ReaperDecisionType.new_target_on_failure, new_reaper_goal_type, new_target)
 
-    goal_reached = reaper_game_state.is_goal_reached(current_goal_type)
-    if goal_reached:
+    if target_availability == TargetAvailabilityState.goal_reached_success:
         reaper_game_state.propagate_successful_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
         new_target = reaper_game_state.initialize_new_target(
             reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
         )
-        reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)
+        target_grid_unit_state = find_target_grid_unit_state(
+            game_grid_information=game_grid_information,
+            target=new_target,
+        )
+        reaper_game_state._target_tracker.track(
+            player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
+        )
         return ReaperDecisionOutput(ReaperDecisionType.new_target_on_success, new_reaper_goal_type, new_target)
 
-    curent_target = reaper_game_state._current_target_info
-    reaper_game_state._target_tracker.track(player_reaper_unit=player_state.reaper_state, target_unit=new_target)
+    reaper_game_state._target_tracker.track(
+        player_reaper_unit=player_state.reaper_state, target_unit=actual_target_grid_unit_state
+    )
     reaper_game_state.apply_step_penalty()
     reaper_game_state.add_current_step_to_mission()
 

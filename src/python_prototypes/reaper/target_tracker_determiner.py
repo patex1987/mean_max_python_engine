@@ -68,6 +68,30 @@ class BaseTracker(ABC):
     def is_target_within_threshold(self, threshold: float) -> bool:
         pass
 
+    @abstractmethod
+    def is_player_faster_than_target(self) -> bool:
+        pass
+
+    @abstractmethod
+    def is_player_higher_energy(self) -> bool:
+        """
+        TODO: remove it, because most probably it will be never used and will be deprecated
+        :return:
+        """
+        pass
+
+    @abstractmethod
+    def is_player_higher_momentum(self) -> bool:
+        pass
+
+    @abstractmethod
+    def is_moving_towards_target(self) -> bool:
+        pass
+
+    @abstractmethod
+    def is_within_collision_radius(self) -> bool:
+        pass
+
 
 class StaticTargetTracker(BaseTracker):
 
@@ -110,17 +134,39 @@ class StaticTargetTracker(BaseTracker):
     def is_target_within_threshold(self, threshold: float) -> bool:
         return self.manhattan_distances_from_target[-1] <= threshold
 
+    def is_player_faster_than_target(self) -> bool:
+        return True
+
+    def is_player_higher_energy(self) -> bool:
+        return True
+
+    def is_player_higher_momentum(self) -> bool:
+        return True
+
+    def is_moving_towards_target(self) -> bool:
+        return True
+
+    def is_within_collision_radius(self) -> bool:
+        return True
+
 
 class DynamicTargetTracker(BaseTracker):
-    """
-    TODO: right now this is the same as the static one, we will change it later
-    """
 
     def __init__(self):
         self.manhattan_distances_from_target = []
         self.manhattan_distance_changes = []
         self.euclidean_distances_from_target = []
         self.euclidean_distance_changes = []
+        self.dx_vectors = []
+        self.dy_vectors = []
+        self.player_speed_vectors: list[tuple[int, int]] = []
+        self.player_speed_changes = []
+        self.target_speed_vectors: list[tuple[int, int]] = []
+        self.target_speed_changes = []
+        self.player_mass = None
+        self.target_mass = None
+        self.player_radius = None
+        self.target_radius = None
 
     def track(self, player_reaper_unit: GridUnitState, target_unit: GridUnitState):
         manhattan_distance = get_manhattan_distance(player_reaper_unit.grid_coordinate, target_unit.grid_coordinate)
@@ -134,6 +180,24 @@ class DynamicTargetTracker(BaseTracker):
         self.euclidean_distances_from_target.append(euclidean_distance)
         if len(self.euclidean_distances_from_target) > 1:
             self.euclidean_distance_changes.append(euclidean_distance - self.euclidean_distances_from_target[-2])
+
+        self.dx_vectors.append(target_unit.unit.x - player_reaper_unit.unit.x)
+        self.dy_vectors.append(target_unit.unit.y - player_reaper_unit.unit.y)
+
+        self.player_speed_vectors.append((player_reaper_unit.unit.vx, player_reaper_unit.unit.vy))
+        if len(self.euclidean_distances_from_target) > 1:
+            self.player_speed_changes.append(
+                (player_reaper_unit.unit.vx, player_reaper_unit.unit.vy) - self.player_speed_vectors[-2]
+            )
+
+        self.target_speed_vectors.append((target_unit.unit.vx, target_unit.unit.vy))
+        if len(self.euclidean_distances_from_target) > 1:
+            self.target_speed_changes.append((target_unit.unit.vx, target_unit.unit.vy) - self.target_speed_vectors[-2])
+
+        self.player_mass = player_reaper_unit.unit.mass
+        self.target_mass = target_unit.unit.mass
+        self.player_radius = player_reaper_unit.unit.radius
+        self.target_radius = target_unit.unit.radius
 
     @property
     def steps_taken(self):
@@ -155,6 +219,63 @@ class DynamicTargetTracker(BaseTracker):
     def is_target_within_threshold(self, threshold: float) -> bool:
         return self.manhattan_distances_from_target[-1] <= threshold
 
+    def is_player_faster_than_target(self) -> bool:
+        player_latest_speed = self.player_speed_vectors[-1]
+        target_latest_speed = self.target_speed_vectors[-1]
+        magnitude_player = (player_latest_speed[0] ** 2 + player_latest_speed[1] ** 2) ** 0.5
+        magnitude_target = (target_latest_speed[0] ** 2 + target_latest_speed[1] ** 2) ** 0.5
+
+        return magnitude_player > magnitude_target
+
+    def is_player_higher_energy(self) -> bool:
+        player_latest_speed = self.player_speed_vectors[-1]
+        target_latest_speed = self.target_speed_vectors[-1]
+        magnitude_player = (player_latest_speed[0] ** 2 + player_latest_speed[1] ** 2) ** 0.5
+        magnitude_target = (target_latest_speed[0] ** 2 + target_latest_speed[1] ** 2) ** 0.5
+
+        player_energy = 0.5 * self.player_mass * magnitude_player**2
+        target_energy = 0.5 * self.target_mass * magnitude_target**2
+
+        return player_energy > target_energy
+
+    def is_player_higher_momentum(self) -> bool:
+        """
+        :return:
+
+        TODO: create functions for these functionalities, as they can
+            be potentially reused elsewhere
+        """
+        player_latest_speed = self.player_speed_vectors[-1]
+        target_latest_speed = self.target_speed_vectors[-1]
+        magnitude_player = (player_latest_speed[0] ** 2 + player_latest_speed[1] ** 2) ** 0.5
+        magnitude_target = (target_latest_speed[0] ** 2 + target_latest_speed[1] ** 2) ** 0.5
+
+        player_momentum = self.player_mass * magnitude_player
+        target_momentum = self.target_mass * magnitude_target
+
+        return player_momentum > target_momentum
+
+    def is_moving_towards_target(self) -> bool:
+        actual_dx = self.dx_vectors[-1]
+        actual_dy = self.dy_vectors[-1]
+        player_latest_speed = self.player_speed_vectors[-1]
+        target_latest_speed = self.target_speed_vectors[-1]
+
+        relative_velocity = (
+            target_latest_speed[0] - player_latest_speed[0],
+            target_latest_speed[1] - player_latest_speed[1],
+        )
+
+        dot_product = (relative_velocity[0] * actual_dx) + (relative_velocity[1] * actual_dy)
+        if dot_product >= 0:
+            return False
+
+        return True
+
+    def is_within_collision_radius(self) -> bool:
+        collision_radius = self.player_radius + self.target_radius
+        return self.is_target_within_threshold(collision_radius)
+
 
 class NoOpTracker(BaseTracker):
     def track(self, player_reaper_unit: GridUnitState, target_unit: GridUnitState):
@@ -174,4 +295,19 @@ class NoOpTracker(BaseTracker):
         return 0.0
 
     def is_target_within_threshold(self, threshold: float) -> bool:
+        return True
+
+    def is_player_faster_than_target(self) -> bool:
+        return True
+
+    def is_player_higher_energy(self) -> bool:
+        return True
+
+    def is_player_higher_momentum(self) -> bool:
+        return True
+
+    def is_moving_towards_target(self) -> bool:
+        return True
+
+    def is_within_collision_radius(self) -> bool:
         return True

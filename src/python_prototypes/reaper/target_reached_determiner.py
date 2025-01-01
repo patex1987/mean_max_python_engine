@@ -2,6 +2,12 @@ from python_prototypes.reaper.q_state_types import ReaperActionTypes
 
 
 def get_goal_reached_determiner(current_goal: ReaperActionTypes):
+    """
+    :param current_goal:
+    :return:
+
+    TODO: this will be deprecated
+    """
     match current_goal:
         case ReaperActionTypes.harvest_safe:
             return

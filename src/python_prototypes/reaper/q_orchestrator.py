@@ -111,11 +111,11 @@ class ReaperGameState:
         is_possible = goal_possibility_determiner(reaper_q_state)
         return is_possible
 
-    def is_goal_target_available(
+    def get_goal_target_availability(
         self,
     ) -> TargetAvailabilityState:
         goal_target_determiner = get_goal_target_determiner(self.current_goal_type)
-        is_available = goal_target_determiner(reaper_q_state, current_target.type)
+        is_available = goal_target_determiner(target_grid_unit, game_grid_information, tracker)
         return is_available
 
     def propagate_successful_goal(self):
