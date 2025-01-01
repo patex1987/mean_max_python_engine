@@ -71,7 +71,7 @@ def water_target_available(
     TODO: water is within wrecks
     """
     wreck_id = goal_target_obj.unit.unit_id
-    _wreck_coordinate = goal_target_obj.grid_coordinate
+    wreck_coordinate = goal_target_obj.grid_coordinate
 
     if not game_grid_information.wreck_id_to_grid_coord:
         return TargetAvailabilityState.invalid
@@ -171,15 +171,32 @@ def tanker_target_available(
     goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     """
-    :param goal_type:
     :param goal_target_obj:
+    :param game_grid_information:
+    :param target_tracker:
     :return:
 
     TODO: water is within wrecks
     """
-    does_it_still_exist()
-    are_we_getting_closer()
-    rounds_limit_reached()
+    tanker_id = goal_target_obj.unit.unit_id
+    tanker_coordinate = goal_target_obj.grid_coordinate
+
+    if not game_grid_information.tanker_id_to_grid_coord:
+        return TargetAvailabilityState.invalid
+
+    if tanker_id not in game_grid_information.tanker_id_to_grid_coord:
+        return TargetAvailabilityState.invalid
+
+    # TODO: move these to some constants, so they are easily configurable
+    replan_round_threshold = 3
+    total_round_threshold = 15
+    target_distance_threshold = 25  # not sure about this, depends on the radius of the tanker
+
+    if target_tracker.total_round_threshold_breached(total_round_threshold):
+        return TargetAvailabilityState.invalid
+
+    if target_tracker.is_distance_growing(replan_round_threshold):
+        return TargetAvailabilityState.replan_reach
 
     return TargetAvailabilityState.valid
 
