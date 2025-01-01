@@ -16,7 +16,7 @@ class TargetAvailabilityState(Enum):
 
 def get_goal_target_determiner(
     current_goal_type: ReaperActionTypes,
-) -> Callable[[GridUnitState, GameGridInformation, BaseTracker], TargetAvailabilityState]:
+) -> Callable[[GridUnitState | None, GameGridInformation, BaseTracker], TargetAvailabilityState]:
     """
 
     :param current_goal_type:
@@ -61,7 +61,7 @@ def get_goal_target_determiner(
 
 
 def water_target_available(
-    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     """
     :param goal_target_obj:
@@ -71,6 +71,9 @@ def water_target_available(
 
     TODO: water is within wrecks
     """
+    if goal_target_obj is None:
+        return TargetAvailabilityState.invalid
+
     wreck_id = goal_target_obj.unit.unit_id
     wreck_coordinate = goal_target_obj.grid_coordinate
 
@@ -98,7 +101,7 @@ def water_target_available(
 
 
 def ram_target_obj_available(
-    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     """
 
@@ -107,6 +110,8 @@ def ram_target_obj_available(
     :param target_tracker:
     :return:
     """
+    if goal_target_obj is None:
+        return TargetAvailabilityState.invalid
     enemy_target_id = goal_target_obj.unit.unit_id
     enemy_target_coordinate = goal_target_obj.grid_coordinate
 
@@ -147,8 +152,10 @@ def ram_target_obj_available(
 
 
 def super_power_target_available(
-    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
+    if goal_target_obj is None:
+        return TargetAvailabilityState.invalid
     target_obj_id = goal_target_obj.unit.unit_id
     enemy_target_coordinate = goal_target_obj.grid_coordinate
 
@@ -169,7 +176,7 @@ def super_power_target_available(
 
 
 def tanker_target_available(
-    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     """
     :param goal_target_obj:
@@ -179,6 +186,8 @@ def tanker_target_available(
 
     TODO: we need somehow detect when a tanker turned into a wreck
     """
+    if goal_target_obj is None:
+        return TargetAvailabilityState.invalid
     tanker_id = goal_target_obj.unit.unit_id
     tanker_coordinate = goal_target_obj.grid_coordinate
 
@@ -208,7 +217,7 @@ def tanker_target_available(
 
 
 def no_op_target_available(
-    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
 ) -> TargetAvailabilityState:
     """
 
