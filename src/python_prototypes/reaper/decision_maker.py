@@ -14,6 +14,7 @@ from python_prototypes.reaper.q_state_types import (
 )
 from python_prototypes.reaper.target_availability_determiner import TargetAvailabilityState
 from python_prototypes.reaper.target_selector import SelectedTargetInformation
+from python_prototypes.reaper.target_tracker_determiner import get_target_tracker
 
 
 class ReaperDecisionType(Enum):
@@ -71,8 +72,6 @@ def reaper_decider(
         )
 
     current_goal_type = reaper_game_state.current_goal_type
-    # if current_goal_type == ReaperActionTypes.wait:
-    #     return ReaperDecisionOutput(ReaperDecisionType.existing_target, current_goal_type, None)
     current_target = reaper_game_state._current_target_info
     actual_target_grid_unit_state = None
     if current_target:
@@ -88,8 +87,6 @@ def reaper_decider(
         tracker=reaper_game_state._target_tracker,
     )
     if target_availability == TargetAvailabilityState.invalid:
-        if current_goal_type !=  ReaperActionTypes.wait:
-            reaper_game_state.propagate_failed_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
         new_target = reaper_game_state.initialize_new_target(
             reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
@@ -208,10 +205,7 @@ class TestReaperDecider:
         reaper_game_state = ReaperGameState()
         reaper_game_state._mission_set = True
         reaper_game_state.current_goal_type = ReaperActionTypes.harvest_safe
-        reaper_game_state._current_target_info = SelectedTargetInformation(
-            id=12345,
-            type=Entity.WRECK
-        )
+        reaper_game_state._current_target_info = SelectedTargetInformation(id=12345, type=Entity.WRECK)
 
         decision_output = reaper_decider(
             reaper_game_state=reaper_game_state,
@@ -228,6 +222,12 @@ class TestReaperDecider:
         the selected goal is wait, and it should be valid only for one
         round i.e. in one round the user does wait, and then it should
         be invalidated in the next round
+
+        NOTE: this is again not a full-blown test, see how the tracker
+            is injected and used
+        TODO: create an actual test that runs both rounds (you need to
+            manually adjust the weights so that wait is selected in the
+            first round, and invalidated in the second round)
         """
         game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
         player_state = ExampleBasicScenarioIncomplete.get_example_player_state()
@@ -239,6 +239,9 @@ class TestReaperDecider:
         reaper_game_state = ReaperGameState()
         reaper_game_state._mission_set = True
         reaper_game_state.current_goal_type = ReaperActionTypes.wait
+        tracker = get_target_tracker(reaper_game_state.current_goal_type)
+        reaper_game_state._target_tracker = tracker
+        reaper_game_state._target_tracker.track(player_state.reaper_state, None)
 
         decision_output = reaper_decider(
             reaper_game_state=reaper_game_state,
@@ -247,5 +250,5 @@ class TestReaperDecider:
             player_state=player_state,
         )
 
-        assert decision_output.decision_type == ReaperDecisionType.new_target_on_failure
+        assert decision_output.decision_type == ReaperDecisionType.new_target_on_success
         assert decision_output.goal_action_type is not None

@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import partial
 from typing import Callable, Any
 
 from python_prototypes.field_types import GridUnitState, GRID_COORD_UNIT_STATE_T, GameGridInformation, Entity
@@ -48,7 +49,7 @@ def get_goal_target_determiner(
         case ReaperActionTypes.use_super_power:
             return super_power_target_available
         case ReaperActionTypes.wait:
-            return no_op_target_available
+            return partial(round_count_target_available, round_limit=1)
         case ReaperActionTypes.move_tanker_safe:
             return tanker_target_available
         case ReaperActionTypes.move_tanker_risky:
@@ -218,4 +219,22 @@ def no_op_target_available(
 
     TODO: check if it works with wait, and doesn't cause an infinite loop
     """
+    return TargetAvailabilityState.valid
+
+def round_count_target_available(
+    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker, round_limit: int
+) -> TargetAvailabilityState:
+    """
+
+    :param goal_target_obj:
+    :param game_grid_information:
+    :param target_tracker:
+    :param round_limit:
+    :return:
+
+    TODO: check if it works with wait, and doesn't cause an infinite loop
+    """
+    current_rounds = target_tracker.steps_taken
+    if current_rounds >= round_limit:
+        return TargetAvailabilityState.goal_reached_success
     return TargetAvailabilityState.valid

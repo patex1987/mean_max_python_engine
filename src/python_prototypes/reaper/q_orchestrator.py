@@ -30,7 +30,7 @@ class ReaperGameState:
     """
 
     def __init__(self):
-        self.current_goal_type:  ReaperActionTypes | None = None
+        self.current_goal_type: ReaperActionTypes | None = None
         self._mission_set = False
         self._current_target_info: SelectedTargetInformation | None = None
         self._current_target_entity_type = None
@@ -117,8 +117,6 @@ class ReaperGameState:
         game_grid_information: GameGridInformation,
         tracker: BaseTracker = None,
     ) -> TargetAvailabilityState:
-        if not target_grid_unit:
-            return TargetAvailabilityState.invalid
         goal_target_determiner = get_goal_target_determiner(self.current_goal_type)
         is_available = goal_target_determiner(target_grid_unit, game_grid_information, tracker)
         return is_available

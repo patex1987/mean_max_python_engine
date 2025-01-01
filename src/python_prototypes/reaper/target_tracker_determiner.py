@@ -33,9 +33,9 @@ def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> 'BaseTracker':
         case ReaperActionTypes.ram_other_far:
             return DynamicTargetTracker()
         case ReaperActionTypes.use_super_power:
-            return NoOpTracker()
+            return RoundCountTracker()
         case ReaperActionTypes.wait:
-            return NoOpTracker()
+            return RoundCountTracker()
         case ReaperActionTypes.move_tanker_safe:
             return DynamicTargetTracker()
         case ReaperActionTypes.move_tanker_risky:
@@ -50,6 +50,18 @@ class BaseTracker(ABC):
 
     @abstractmethod
     def track(self, player_reaper_unit: GridUnitState, target_unit: GridUnitState):
+        """
+        :param player_reaper_unit:
+        :param target_unit:
+        :return:
+
+        TODO: change the type of target_unit, it can be None
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def steps_taken(self):
         pass
 
     @abstractmethod
@@ -284,6 +296,46 @@ class NoOpTracker(BaseTracker):
     @property
     def steps_taken(self):
         return 0
+
+    def is_distance_growing(self, round_threshold: int) -> bool:
+        return True
+
+    def total_round_threshold_breached(self, round_threshold: int) -> bool:
+        return True
+
+    def actual_distance(self) -> float:
+        return 0.0
+
+    def is_target_within_threshold(self, threshold: float) -> bool:
+        return True
+
+    def is_player_faster_than_target(self) -> bool:
+        return True
+
+    def is_player_higher_energy(self) -> bool:
+        return True
+
+    def is_player_higher_momentum(self) -> bool:
+        return True
+
+    def is_moving_towards_target(self) -> bool:
+        return True
+
+    def is_within_collision_radius(self) -> bool:
+        return True
+
+
+class RoundCountTracker(BaseTracker):
+
+    def __init__(self):
+        self._round_count = 0
+
+    def track(self, player_reaper_unit: GridUnitState, target_unit: GridUnitState):
+        self._round_count += 1
+
+    @property
+    def steps_taken(self):
+        return self._round_count
 
     def is_distance_growing(self, round_threshold: int) -> bool:
         return True
