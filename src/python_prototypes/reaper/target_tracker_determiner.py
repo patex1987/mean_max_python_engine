@@ -199,12 +199,20 @@ class DynamicTargetTracker(BaseTracker):
         self.player_speed_vectors.append((player_reaper_unit.unit.vx, player_reaper_unit.unit.vy))
         if len(self.euclidean_distances_from_target) > 1:
             self.player_speed_changes.append(
-                (player_reaper_unit.unit.vx, player_reaper_unit.unit.vy) - self.player_speed_vectors[-2]
+                (
+                    player_reaper_unit.unit.vx - self.player_speed_vectors[-2][0],
+                    player_reaper_unit.unit.vy - self.player_speed_vectors[-2][1],
+                )
             )
 
         self.target_speed_vectors.append((target_unit.unit.vx, target_unit.unit.vy))
         if len(self.euclidean_distances_from_target) > 1:
-            self.target_speed_changes.append((target_unit.unit.vx, target_unit.unit.vy) - self.target_speed_vectors[-2])
+            self.target_speed_changes.append(
+                (
+                    target_unit.unit.vx - self.target_speed_vectors[-2][0],
+                    target_unit.unit.vx - self.target_speed_vectors[-2][0],
+                )
+            )
 
         self.player_mass = player_reaper_unit.unit.mass
         self.target_mass = target_unit.unit.mass
@@ -226,10 +234,10 @@ class DynamicTargetTracker(BaseTracker):
         return len(self.manhattan_distance_changes) >= round_threshold
 
     def actual_distance(self) -> float:
-        return self.manhattan_distances_from_target[-1]
+        return self.euclidean_distances_from_target[-1]
 
     def is_target_within_threshold(self, threshold: float) -> bool:
-        return self.manhattan_distances_from_target[-1] <= threshold
+        return self.euclidean_distances_from_target[-1] <= threshold
 
     def is_player_faster_than_target(self) -> bool:
         player_latest_speed = self.player_speed_vectors[-1]

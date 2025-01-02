@@ -1,8 +1,16 @@
+import math
 from dataclasses import dataclass
 from enum import Enum
 
 
-from python_prototypes.field_types import GameGridInformation, PlayerState, GridUnitState, Unit, Entity
+from python_prototypes.field_types import (
+    GameGridInformation,
+    PlayerState,
+    GridUnitState,
+    Unit,
+    Entity,
+    EntitiesForReaper,
+)
 from python_prototypes.real_game_mocks.full_grid_state import ExampleBasicScenarioIncomplete
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
 from python_prototypes.reaper.q_orchestrator import ReaperGameState, find_target_grid_unit_state
@@ -118,6 +126,8 @@ def reaper_decider(
     reaper_game_state._target_tracker.track(
         player_reaper_unit=player_state.reaper_state, target_unit=actual_target_grid_unit_state
     )
+
+    update_the_goal_type_based_on_current_q_state()
     reaper_game_state.apply_step_penalty()
     reaper_game_state.add_current_step_to_mission()
 
@@ -205,7 +215,7 @@ class TestReaperDecider:
         reaper_game_state = ReaperGameState()
         reaper_game_state._mission_set = True
         reaper_game_state.current_goal_type = ReaperActionTypes.harvest_safe
-        reaper_game_state._current_target_info = SelectedTargetInformation(id=12345, type=Entity.WRECK)
+        reaper_game_state._current_target_info = SelectedTargetInformation(id=12345, type=EntitiesForReaper.WRECK)
 
         decision_output = reaper_decider(
             reaper_game_state=reaper_game_state,
@@ -252,3 +262,61 @@ class TestReaperDecider:
 
         assert decision_output.decision_type == ReaperDecisionType.new_target_on_success
         assert decision_output.goal_action_type is not None
+
+    def test_valid_goal_progressing_to_next_round(self):
+        """
+        the selected target's availability is determined as valid, so the
+        target should propagate to the next round
+
+        player's reaper is at (3, 3)
+        enemy other object is at (2, 0) (object id is 2, type is destroyer)
+            - and the closest water or tanker is at (2,0)
+
+        i.e. the enemy other object is categorized as close, close
+        the player's speed needs to point towards the target. the player
+        is not within the collision radius, but as it points towards the
+        target its considered valid, and no replan is needed
+        """
+        game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
+        player_state = ExampleBasicScenarioIncomplete.get_example_player_state()
+
+        reaper_q_state = calculate_reaper_q_state(
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )
+
+        target_unit = find_target_grid_unit_state(
+            game_grid_information=game_grid_information,
+            target=SelectedTargetInformation(id=2, type=EntitiesForReaper.OTHER_ENEMY),
+        )
+
+        reaper_game_state = ReaperGameState()
+        reaper_game_state._mission_set = True
+        # there is a close, close reaper available in the grid
+        reaper_game_state.current_goal_type = ReaperActionTypes.ram_other_close
+        reaper_game_state._current_target_info = SelectedTargetInformation(
+            id=target_unit.unit.unit_id, type=EntitiesForReaper.OTHER_ENEMY
+        )
+
+        enemy_position = target_unit.unit.x, target_unit.unit.y
+        player_position = player_state.reaper_state.unit.x, player_state.reaper_state.unit.y
+        dx = enemy_position[0] - player_position[0]
+        dy = enemy_position[1] - player_position[1]
+        magnitude = math.sqrt(dx**2 + dy**2)
+        normalized_speed_vector = (dx / magnitude, dy / magnitude)
+        player_state.reaper_state.unit.vx = normalized_speed_vector[0] * 100
+        player_state.reaper_state.unit.vy = normalized_speed_vector[1] * 100
+
+        player_state.reaper_state.unit.mass = 10
+        target_unit.unit.mass = 1
+
+        tracker = get_target_tracker(reaper_game_state.current_goal_type)
+        reaper_game_state._target_tracker = tracker
+        reaper_game_state._target_tracker.track(player_state.reaper_state, target_unit)
+
+        decision_output = reaper_decider(
+            reaper_game_state=reaper_game_state,
+            reaper_q_state=reaper_q_state,
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )

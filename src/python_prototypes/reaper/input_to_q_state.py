@@ -67,7 +67,7 @@ def calculate_reaper_q_state(game_grid_information: GameGridInformation, player_
 
 
 def get_player_enemy_relation(
-    enemy_reaper_id_to_grid_coords: dict[Any, tuple[int, int]],
+    enemy_object_id_to_grid_coords: dict[Any, tuple[int, int]],
     player_state: PlayerState,
     wreck_id_to_grid_coords: dict[Any, tuple[int, int]],
     tanker_id_to_grid_coords: dict[Any, tuple[int, int]],
@@ -77,7 +77,7 @@ def get_player_enemy_relation(
     to reapers. It can try to ram into enemies. This relation mapping gives
     input for that decision
 
-    :param enemy_reaper_id_to_grid_coords:
+    :param enemy_object_id_to_grid_coords:
     :param player_state:
     :param wreck_id_to_grid_coords:
     :param tanker_id_to_grid_coords:
@@ -89,19 +89,19 @@ def get_player_enemy_relation(
     player_enemy_relations = get_default_enemies_relation()
     player_coordinate = player_state.reaper_state.grid_coordinate
 
-    for enemy_reaper_id, enemy_reaper_coordinate in enemy_reaper_id_to_grid_coords.items():
+    for enemy_object_id, enemy_object_coordinate in enemy_object_id_to_grid_coords.items():
         manhattan_distance = get_manhattan_distance(
-            coordinate_a=enemy_reaper_coordinate, coordinate_b=player_coordinate
+            coordinate_a=enemy_object_coordinate, coordinate_b=player_coordinate
         )
         distance_category = DISTANCE_CATEGORY_RETRIEVER.get_category(manhattan_distance=manhattan_distance)
         closest_water_distance_category = get_closest_water_distance_category(
-            enemy_unit_coordinate=enemy_reaper_coordinate,
+            enemy_unit_coordinate=enemy_object_coordinate,
             wreck_id_to_grid_coords=wreck_id_to_grid_coords,
             tanker_id_to_grid_coords=tanker_id_to_grid_coords,
         )
         if closest_water_distance_category == DistanceCategories.far.name:
             continue
-        player_enemy_relations[(distance_category.name, closest_water_distance_category)].append(enemy_reaper_id)
+        player_enemy_relations[(distance_category.name, closest_water_distance_category)].append(enemy_object_id)
 
     return player_enemy_relations
 

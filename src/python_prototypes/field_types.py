@@ -15,7 +15,16 @@ class Entity(Enum):
     WRECK = 4
     TAR_POOL = 5
     OIL_POOL = 6
-    OTHER_ENEMY = 7 # DESTROYER + DOOF
+
+class EntitiesForReaper(Enum):
+    REAPER = 0
+    DESTROYER = 1
+    DOOF = 2
+    TANKER = 3
+    WRECK = 4
+    TAR_POOL = 5
+    OIL_POOL = 6
+    OTHER_ENEMY = 7
 
 
 class PlayerFieldTypes(Enum):
@@ -55,8 +64,10 @@ class Unit:
 
 class GridUnitState:
     """
-    # TODO: this stores only the units today, we need to create an
+    TODO: this stores only the units today, we need to create an
         interface as we **might** need the exact implementation
+    TODO: think about moving the grid_coordinate into the unit
+        object (Unit class)
     """
 
     def __init__(self, grid_coordinate: tuple[int, int], unit: Unit):

@@ -7,7 +7,7 @@ import random
 
 import pytest
 
-from python_prototypes.field_types import GridUnitState, GameGridInformation, Entity
+from python_prototypes.field_types import GridUnitState, GameGridInformation, EntitiesForReaper
 from python_prototypes.reaper.exception_types import ImpossibleTarget
 from python_prototypes.reaper.goal_possibility_determiner import get_goal_possibility_determiner
 from python_prototypes.reaper.q_state_types import (
@@ -168,7 +168,7 @@ def find_target_grid_unit_state(
     game_grid_information: GameGridInformation, target: SelectedTargetInformation
 ) -> GridUnitState | None:
     match target.type:
-        case Entity.WRECK:
+        case EntitiesForReaper.WRECK:
             if target.id not in game_grid_information.wreck_id_to_grid_coord:
                 return None
             wreck_grid_coordinate = game_grid_information.wreck_id_to_grid_coord[target.id]
@@ -176,7 +176,7 @@ def find_target_grid_unit_state(
             for wreck in possible_wrecks:
                 if wreck.unit.unit_id == target.id:
                     return wreck
-        case Entity.REAPER:
+        case EntitiesForReaper.REAPER:
             if target.id not in game_grid_information.enemy_reaper_id_to_grid_coord:
                 return None
             reaper_grid_coordinate = game_grid_information.enemy_reaper_id_to_grid_coord[target.id]
@@ -185,7 +185,7 @@ def find_target_grid_unit_state(
                 if reaper.unit.unit_id == target.id:
                     return reaper
             return None
-        case Entity.OTHER_ENEMY:
+        case EntitiesForReaper.OTHER_ENEMY:
             if target.id not in game_grid_information.enemy_others_id_to_grid_coord:
                 return None
             other_grid_coordinate = game_grid_information.enemy_others_id_to_grid_coord[target.id]
@@ -194,7 +194,7 @@ def find_target_grid_unit_state(
                 if other_enemy.unit.unit_id == target.id:
                     return other_enemy
             return None
-        case Entity.TANKER:
+        case EntitiesForReaper.TANKER:
             if target.id not in game_grid_information.tanker_id_to_grid_coord:
                 return None
             tanker_grid_coordinate = game_grid_information.tanker_id_to_grid_coord[target.id]

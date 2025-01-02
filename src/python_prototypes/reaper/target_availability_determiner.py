@@ -115,11 +115,18 @@ def ram_target_obj_available(
     enemy_target_id = goal_target_obj.unit.unit_id
     enemy_target_coordinate = goal_target_obj.grid_coordinate
 
-    if not game_grid_information.enemy_reaper_id_to_grid_coord:
-        return TargetAvailabilityState.invalid
-
-    if enemy_target_id not in game_grid_information.enemy_reaper_id_to_grid_coord:
-        return TargetAvailabilityState.invalid
+    match Entity(goal_target_obj.unit.unit_type):
+        case Entity.REAPER:
+            if enemy_target_id not in game_grid_information.enemy_reaper_id_to_grid_coord:
+                return TargetAvailabilityState.invalid
+        case Entity.DESTROYER:
+            if enemy_target_id not in game_grid_information.enemy_others_id_to_grid_coord:
+                return TargetAvailabilityState.invalid
+        case Entity.DOOF:
+            if enemy_target_id not in game_grid_information.enemy_others_id_to_grid_coord:
+                return TargetAvailabilityState.invalid
+        case _:
+            return TargetAvailabilityState.invalid
 
     # TODO: move this to a dedicated configuration
     # need to replan on every round, as the target object is moving
@@ -136,9 +143,9 @@ def ram_target_obj_available(
 
     within_collision_threshold = target_tracker.is_within_collision_radius()
     if not within_collision_threshold:
-        if target_tracker.is_moving_towards_target():
-            return TargetAvailabilityState.replan_reach
-        return TargetAvailabilityState.valid
+        if not target_tracker.is_moving_towards_target():
+            return TargetAvailabilityState.valid
+        return TargetAvailabilityState.replan_reach
 
     moving_towards_target = target_tracker.is_moving_towards_target()
     if not moving_towards_target:
@@ -225,13 +232,15 @@ def no_op_target_available(
     :param game_grid_information:
     :param target_tracker:
     :return:
-
-    TODO: check if it works with wait, and doesn't cause an infinite loop
     """
     return TargetAvailabilityState.valid
 
+
 def round_count_target_available(
-    goal_target_obj: GridUnitState, game_grid_information: GameGridInformation, target_tracker: BaseTracker, round_limit: int
+    goal_target_obj: GridUnitState,
+    game_grid_information: GameGridInformation,
+    target_tracker: BaseTracker,
+    round_limit: int,
 ) -> TargetAvailabilityState:
     """
 
@@ -240,8 +249,6 @@ def round_count_target_available(
     :param target_tracker:
     :param round_limit:
     :return:
-
-    TODO: check if it works with wait, and doesn't cause an infinite loop
     """
     current_rounds = target_tracker.steps_taken
     if current_rounds >= round_limit:

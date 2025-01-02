@@ -3,7 +3,7 @@ from typing import Any, Callable
 
 from mypy.plugins.default import partial
 
-from python_prototypes.field_types import Entity
+from python_prototypes.field_types import EntitiesForReaper
 from python_prototypes.reaper.exception_types import ImpossibleTarget
 from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTypes
 
@@ -11,7 +11,7 @@ from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTyp
 @dataclass
 class SelectedTargetInformation:
     id: int
-    type: Entity
+    type: EntitiesForReaper
 
 
 def get_target_id_selector(
@@ -20,7 +20,7 @@ def get_target_id_selector(
     """
 
     :param reaper_goal_type:
-    :return: the callable returns the id of the target object (if available) and its entity type
+    :return: the callable returns the id of the target object (if available) and its SimplifiedEntitiesForReaper type
     """
     match reaper_goal_type:
         case ReaperActionTypes.harvest_safe:
@@ -58,37 +58,37 @@ def get_target_id_selector(
 
 def select_water_target_by_risk_level(reaper_q_state: ReaperQState, risk_level: str) -> SelectedTargetInformation:
     if relation := reaper_q_state.water_reaper_relation[('close', risk_level)]:
-        return SelectedTargetInformation(relation[0], Entity.WRECK)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.WRECK)
     if relation := reaper_q_state.water_reaper_relation[('medium', risk_level)]:
-        return SelectedTargetInformation(relation[0], Entity.WRECK)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.WRECK)
     if relation := reaper_q_state.water_reaper_relation[('far', risk_level)]:
-        return SelectedTargetInformation(relation[0], Entity.WRECK)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.WRECK)
     raise ImpossibleTarget(f'No water target found for risk level: {risk_level}')
 
 
 def select_enemy_reaper_by_distance(reaper_q_state: ReaperQState, distance_level: str) -> SelectedTargetInformation:
     if relation := reaper_q_state.player_reaper_relation[(distance_level, 'close')]:
-        return SelectedTargetInformation(relation[0], Entity.REAPER)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.REAPER)
     if relation := reaper_q_state.player_reaper_relation[(distance_level, 'medium')]:
-        return SelectedTargetInformation(relation[0], Entity.REAPER)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.REAPER)
     raise ImpossibleTarget(f'No enemy reaper found for distance level: {distance_level}')
 
 
 def select_enemy_other_by_distance(reaper_q_state: ReaperQState, distance_level: str) -> SelectedTargetInformation:
     if relation := reaper_q_state.player_other_relation[(distance_level, 'close')]:
-        return SelectedTargetInformation(relation[0], Entity.OTHER_ENEMY)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.OTHER_ENEMY)
     if relation := reaper_q_state.player_other_relation[(distance_level, 'medium')]:
-        return SelectedTargetInformation(relation[0], Entity.OTHER_ENEMY)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.OTHER_ENEMY)
     raise ImpossibleTarget(f'No other enemy found for distance level: {distance_level}')
 
 
 def select_tanker_target_by_risk_level(reaper_q_state: ReaperQState, risk_level: str) -> SelectedTargetInformation:
     if relation := reaper_q_state.tanker_enemy_relation[('close', risk_level)]:
-        return SelectedTargetInformation(relation[0], Entity.TANKER)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.TANKER)
     if relation := reaper_q_state.tanker_enemy_relation[('medium', risk_level)]:
-        return SelectedTargetInformation(relation[0], Entity.TANKER)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.TANKER)
     if relation := reaper_q_state.tanker_enemy_relation[('far', risk_level)]:
-        return SelectedTargetInformation(relation[0], Entity.TANKER)
+        return SelectedTargetInformation(relation[0], EntitiesForReaper.TANKER)
     raise ImpossibleTarget(f'No tanker target found for risk level: {risk_level}')
 
 
