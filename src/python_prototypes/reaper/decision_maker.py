@@ -79,7 +79,6 @@ def reaper_decider(
             ReaperDecisionType.new_target_on_undefined, new_reaper_goal_type, target_grid_unit_state
         )
 
-    current_goal_type = reaper_game_state.current_goal_type
     current_target = reaper_game_state._current_target_info
     actual_target_grid_unit_state = None
     if current_target:
@@ -126,12 +125,14 @@ def reaper_decider(
     reaper_game_state._target_tracker.track(
         player_reaper_unit=player_state.reaper_state, target_unit=actual_target_grid_unit_state
     )
-
-    update_the_goal_type_based_on_current_q_state()
+    # TODO: adjust the reaper q state to collect / store mapping from
+    #  coordinate to category (not just the opposite as it is now)
+    current_goal_type = reaper_game_state.current_goal_type
+    adjusted_goal_type = update_the_goal_type_based_on_current_q_state(current_goal_type)
     reaper_game_state.apply_step_penalty()
     reaper_game_state.add_current_step_to_mission()
 
-    return ReaperDecisionOutput(ReaperDecisionType.existing_target, current_goal_type, actual_target_grid_unit_state)
+    return ReaperDecisionOutput(ReaperDecisionType.existing_target, adjusted_goal_type, actual_target_grid_unit_state)
 
 
 class TestReaperDecider:
