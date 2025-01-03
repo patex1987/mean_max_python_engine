@@ -13,7 +13,7 @@ from python_prototypes.field_types import (
 )
 from python_prototypes.real_game_mocks.full_grid_state import ExampleBasicScenarioIncomplete
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
-from python_prototypes.reaper.q_orchestrator import ReaperGameState, find_target_grid_unit_state
+from python_prototypes.reaper.q_orchestrator import ReaperGameState, find_target_grid_unit_state, get_updated_goal_type
 from python_prototypes.reaper.q_state_types import (
     ReaperQState,
     ReaperActionTypes,
@@ -125,12 +125,12 @@ def reaper_decider(
     reaper_game_state._target_tracker.track(
         player_reaper_unit=player_state.reaper_state, target_unit=actual_target_grid_unit_state
     )
-    # TODO: adjust the reaper q state to collect / store mapping from
-    #  coordinate to category (not just the opposite as it is now)
     current_goal_type = reaper_game_state.current_goal_type
-    adjusted_goal_type = update_the_goal_type_based_on_current_q_state(current_goal_type)
-    reaper_game_state.apply_step_penalty()
-    reaper_game_state.add_current_step_to_mission()
+    adjusted_goal_type = get_updated_goal_type(reaper_q_state, current_target, current_goal_type)
+    q_state_key = reaper_q_state.get_state_tuple_key()
+    reaper_game_state.register_q_state(q_state_key)
+    reaper_game_state.add_current_step_to_mission(q_state_key)
+    reaper_game_state.apply_step_penalty(q_state_key)
 
     return ReaperDecisionOutput(ReaperDecisionType.existing_target, adjusted_goal_type, actual_target_grid_unit_state)
 
@@ -149,6 +149,11 @@ class TestReaperDecider:
             player_reaper_relation=get_default_enemies_relation(),
             player_other_relation=get_default_enemies_relation(),
             super_power_available=False,
+            reaper_water_relation={},
+            other_water_relation={},
+            tanker_id_enemy_category_relation={},
+            reaper_id_category_relation={},
+            other_id_category_mapping={},
         )
         game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
         player_state = PlayerState(
@@ -321,3 +326,22 @@ class TestReaperDecider:
             game_grid_information=game_grid_information,
             player_state=player_state,
         )
+
+        assert decision_output.decision_type == ReaperDecisionType.existing_target
+
+        # this should be the same as before
+        selected_target_unit = decision_output.target_grid_unit
+        assert selected_target_unit.grid_coordinate == target_unit.grid_coordinate
+        assert selected_target_unit.unit.unit_id == target_unit.unit.unit_id
+
+    def test_target_reached_successful(self):
+        """
+        TODO: do this next and validate the propagation into the q state
+        """
+        pass
+
+    def test_target_reached_failed(self):
+        """
+        TODO: do this next and validate the propagation into the q state
+        """
+        pass

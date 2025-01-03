@@ -25,6 +25,11 @@ class ReaperQState:
         player_reaper_relation: dict[tuple[str, str], list[int]],
         player_other_relation: dict[tuple[str, str], list[int]],
         super_power_available: bool,
+        reaper_water_relation: dict[int, tuple[str, str]],
+        other_water_relation: dict[int, tuple[str, str]],
+        tanker_id_enemy_category_relation: dict[int, tuple[str, str]],
+        reaper_id_category_relation: dict[int, tuple[str, str]],
+        other_id_category_mapping: dict[int, tuple[str, str]],
     ):
         self.water_reaper_relation = water_reaper_relation
         self.water_other_relation = water_other_relation
@@ -37,8 +42,13 @@ class ReaperQState:
         self.tanker_enemy_state = convert_to_state_dict(tanker_enemy_relation)
         self.player_reaper_state = convert_to_state_dict(player_reaper_relation)
         self.player_other_state = convert_to_state_dict(player_other_relation)
+        self.reaper_water_relation = reaper_water_relation
+        self.other_water_relation = other_water_relation
+        self.tanker_id_enemy_category_relation = tanker_id_enemy_category_relation
+        self.reaper_id_category_relation = reaper_id_category_relation
+        self.other_id_category_mapping = other_id_category_mapping
 
-    def get_state_tuple_key(self):
+    def get_state_tuple_key(self) -> tuple[tuple, tuple, tuple, tuple, tuple, int]:
         """
         TODO: user numbered categories (or enums) in the dict keys instead of strings
         """
@@ -85,6 +95,12 @@ def get_default_water_relations() -> dict[tuple[str, str], list[Any]]:
 
 
 def get_default_tanker_enemies_relation() -> dict[tuple[str, str], list[Any]]:
+    """
+    keyed by the tanker distance category, and that tanker's distance category
+    to the enemies
+
+    :return:
+    """
     tanker_enemies_relation = {
         ('close', 'safe'): [],
         ('close', 'risky'): [],
@@ -100,6 +116,12 @@ def get_default_tanker_enemies_relation() -> dict[tuple[str, str], list[Any]]:
 
 
 def get_default_enemies_relation() -> dict[tuple[str, str], list[Any]]:
+    """
+    keyed by enemy distance category, and that enemy's distance category
+    to wreck or a tanker
+
+    :return:
+    """
     enemies_relation = {
         ('close', 'close'): [],
         ('close', 'medium'): [],

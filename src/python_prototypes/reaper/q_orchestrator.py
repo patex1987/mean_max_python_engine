@@ -145,6 +145,25 @@ class ReaperGameState:
         self._current_target_info = selected_target
         return selected_target
 
+    def add_current_step_to_mission(self, q_state_key: tuple):
+        self._current_mission_steps.append(q_state_key)
+
+    def apply_step_penalty(self, q_state_key: tuple) -> None:
+        reaper_q_action_weights = self._q_table.setdefault(
+            q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+        )
+        reaper_q_action_weights.inner_weigths_dict[self.current_goal_type] -= STEP_PENALTY
+        return
+
+    def register_q_state(self, q_state_key: tuple) -> None:
+        _reaper_q_action_weights = self._q_table.setdefault(
+            q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+        )
+        return
+
+
+STEP_PENALTY = 0.5
+
 
 def get_goal_failure_penalty(current_goal: str) -> float:
     """
@@ -207,6 +226,63 @@ def find_target_grid_unit_state(
             raise ValueError(f'Unknown target type: {target.type}')
 
 
+def get_updated_goal_type(
+    reaper_q_state: ReaperQState, current_target: SelectedTargetInformation, current_goal_type: ReaperActionTypes
+) -> ReaperActionTypes:
+    """
+    while you are moving every round a far risky wreck can become a close
+    safe wreck. This function returns the updated state, so the q table
+    is filled with up-to-date state
+
+    :param reaper_q_state:
+    :param current_target:
+    :param current_goal_type:
+    :return:
+    """
+    target_id = current_target.id
+    match current_goal_type:
+        case ReaperActionTypes.harvest_safe | ReaperActionTypes.harvest_risky | ReaperActionTypes.harvest_dangerous:
+            # TODO: remember `goal_possibility_determiner.safe_water_possible` - only reapers are considered yet
+            updated_reaper_water_category = reaper_q_state.reaper_water_relation[target_id]
+            distance, risk = updated_reaper_water_category
+            # TODO: we already have another TODO to this differently, especially don't rely on stupid strings
+            harvest_category_name = f'harvest_{risk}'
+            harvest_category = ReaperActionTypes[harvest_category_name]
+            return harvest_category
+
+        case ReaperActionTypes.ram_reaper_close | ReaperActionTypes.ram_reaper_mid | ReaperActionTypes.ram_reaper_far:
+            updated_enemy_other_category = reaper_q_state.reaper_id_category_relation[target_id]
+            reaper_distance, water_distance = updated_enemy_other_category
+            ram_reaper_category_name = f'ram_reaper_{reaper_distance}'
+            ram_category = ReaperActionTypes[ram_reaper_category_name]
+            return ram_category
+
+        case ReaperActionTypes.ram_other_close | ReaperActionTypes.ram_other_mid | ReaperActionTypes.ram_other_far:
+            updated_enemy_other_category = reaper_q_state.other_id_category_mapping[target_id]
+            other_distance, water_distance = updated_enemy_other_category
+            ram_other_category_name = f'ram_other_{other_distance}'
+            ram_category = ReaperActionTypes[ram_other_category_name]
+            return ram_category
+
+        case ReaperActionTypes.use_super_power:
+            # TODO: validate and update the target once we have multiple super power types
+            return ReaperActionTypes.use_super_power
+
+        case ReaperActionTypes.wait:
+            return ReaperActionTypes.wait
+
+        case (
+            ReaperActionTypes.move_tanker_safe
+            | ReaperActionTypes.move_tanker_risky
+            | ReaperActionTypes.move_tanker_dangerous
+        ):
+            updated_tanker_category = reaper_q_state.tanker_id_enemy_category_relation[target_id]
+            distance, risk = updated_tanker_category
+            move_tanker_category_name = f'move_tanker_{risk}'
+            move_tanker_category = ReaperActionTypes[move_tanker_category_name]
+            return move_tanker_category
+
+
 class TestReaperGameStateInitializeNewTarget:
     def test_initialize_new_target(self):
         """
@@ -222,6 +298,11 @@ class TestReaperGameStateInitializeNewTarget:
             player_reaper_relation=get_default_enemies_relation(),
             player_other_relation=get_default_enemies_relation(),
             super_power_available=False,
+            reaper_water_relation={},
+            other_water_relation={},
+            tanker_id_enemy_category_relation={},
+            reaper_id_category_relation={},
+            other_id_category_mapping={},
         )
         reaper_game_state = ReaperGameState()
         reaper_game_state.initialize_new_goal_type(reaper_q_state)

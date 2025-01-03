@@ -141,12 +141,13 @@ def original_game_main():
         reaper_q_state = calculate_reaper_q_state(
             game_grid_information=game_grid_information, player_state=player_state
         )
-        next_step = reaper_decider(
+        reaper_decision = reaper_decider(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
             player_state=player_state,
         )
+        reaper_decision
         print("WAIT")
         print("WAIT")
         print("WAIT")

@@ -174,7 +174,7 @@ def super_power_target_available(
             if target_obj_id not in game_grid_information.enemy_reaper_id_to_grid_coord:
                 return TargetAvailabilityState.invalid
             return TargetAvailabilityState.goal_reached_success
-        case Entity.OTHER_ENEMY:
+        case Entity.DESTROYER | Entity.DOOF:
             if target_obj_id not in game_grid_information.enemy_others_id_to_grid_coord:
                 return TargetAvailabilityState.invalid
             return TargetAvailabilityState.goal_reached_success
