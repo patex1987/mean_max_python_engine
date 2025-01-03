@@ -88,6 +88,7 @@ def get_player_enemy_relation(
     """
     player_enemy_relations = get_default_enemies_relation()
     player_coordinate = player_state.reaper_state.grid_coordinate
+    enemy_id_to_category_mapping = {}
 
     for enemy_object_id, enemy_object_coordinate in enemy_object_id_to_grid_coords.items():
         manhattan_distance = get_manhattan_distance(
@@ -102,6 +103,7 @@ def get_player_enemy_relation(
         if closest_water_distance_category == DistanceCategories.far.name:
             continue
         player_enemy_relations[(distance_category.name, closest_water_distance_category)].append(enemy_object_id)
+        enemy_id_to_category_mapping[enemy_object_id] = (distance_category.name, closest_water_distance_category)
 
     return player_enemy_relations
 
@@ -160,6 +162,7 @@ def get_tanker_enemy_relations(
     """
     tanker_enemies_relation = get_default_tanker_enemies_relation()
     player_coordinate = player_state.reaper_state.grid_coordinate
+    tanker_id_category_mapping = {}
 
     for tanker_id, tanker_coordinate in tanker_id_to_grid_coord.items():
         manhattan_distance = get_manhattan_distance(coordinate_a=tanker_coordinate, coordinate_b=player_coordinate)
@@ -170,6 +173,7 @@ def get_tanker_enemy_relations(
             enemy_others_id_coordinates=enemy_others_grid_state,
         )
         tanker_enemies_relation[(distance_category.name, closest_enemy_reaper_category)].append(tanker_id)
+        tanker_id_category_mapping[tanker_id] = (distance_category.name, closest_enemy_reaper_category)
 
     return tanker_enemies_relation
 
@@ -241,6 +245,7 @@ def get_water_enemy_relations(
     """
     water_reaper_relation = get_default_water_relations()
     player_reaper_coordinate = player_state.reaper_state.grid_coordinate
+    wreck_id_category_mapping = {}
     for wreck_id, wreck_coordinate in wreck_id_to_grid_coord:
 
         manhattan_distance = get_manhattan_distance(
@@ -253,6 +258,7 @@ def get_water_enemy_relations(
         )
 
         water_reaper_relation[(distance_category.name, closest_enemy_reaper_category)].append(wreck_id)
+        wreck_id_category_mapping[wreck_id] = (distance_category.name, closest_enemy_reaper_category)
 
     return water_reaper_relation
 
