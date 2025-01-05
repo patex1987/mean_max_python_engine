@@ -34,7 +34,9 @@ class ReaperGameState:
         self._mission_set = False
         self._current_target_info: SelectedTargetInformation | None = None
         self._current_target_entity_type = None
-        self._current_mission_steps = []
+        # list of q state keys
+        # TODO: change this to a set
+        self._current_mission_steps: list[tuple] = []
         self._q_table = {}
         self._target_tracker: BaseTracker | None = None
         self.exploration_rate = 0.2
@@ -95,13 +97,27 @@ class ReaperGameState:
         """
         applies a failure penalty after a failed goal to every single step
         in the current mission
-        :param current_goal:
         :return:
         """
+
+        # TODO: this is wrong, the current goal type changes every round
         current_goal = self.current_goal_type
         failure_penalty = get_goal_failure_penalty(current_goal)
-        for state_step in self._current_mission_steps:
-            self._reaper_q_actions.inner_weigths_dict[state_step] -= failure_penalty
+        for q_state_key in self._current_mission_steps:
+            reaper_q_action_weights = self._q_table.setdefault(
+                q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+            )
+            reaper_q_action_weights.inner_weigths_dict[self.current_goal_type] -= failure_penalty
+
+    def propagate_successful_goal(self):
+        # TODO: this is wrong, the current goal type changes every round
+        current_goal = self.current_goal_type
+        success_reward = get_goal_success_reward(current_goal)
+        for q_state_key in self._current_mission_steps:
+            reaper_q_action_weights = self._q_table.setdefault(
+                q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+            )
+            reaper_q_action_weights.inner_weigths_dict[self.current_goal_type] += success_reward
 
     def is_goal_possible(self, reaper_q_state: ReaperQState, goal_type: ReaperActionTypes) -> bool:
         """
@@ -120,12 +136,6 @@ class ReaperGameState:
         goal_target_determiner = get_goal_target_determiner(self.current_goal_type)
         is_available = goal_target_determiner(target_grid_unit, game_grid_information, tracker)
         return is_available
-
-    def propagate_successful_goal(self):
-        current_goal = self.current_goal_type
-        success_reward = get_goal_success_reward(current_goal)
-        for state_step in self._current_mission_steps:
-            self._reaper_q_actions.inner_weigths_dict[state_step] += success_reward
 
     def is_goal_reached(self, current_goal):
         reachability_determiner = get_goal_reached_determiner(current_goal)
@@ -165,22 +175,22 @@ class ReaperGameState:
 STEP_PENALTY = 0.5
 
 
-def get_goal_failure_penalty(current_goal: str) -> float:
+def get_goal_failure_penalty(current_goal: ReaperActionTypes) -> float:
     """
     TODO: add goal specific penalties
     :param current_goal:
     :return:
     """
-    return -0.5
+    return 0.5
 
 
-def get_goal_success_reward(current_goal: str) -> float:
+def get_goal_success_reward(current_goal: ReaperActionTypes) -> float:
     """
     TODO: add goal specific rewards
     :param current_goal:
     :return:
     """
-    return -1.0
+    return 1.0
 
 
 def find_target_grid_unit_state(

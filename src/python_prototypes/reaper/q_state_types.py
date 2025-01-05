@@ -78,6 +78,9 @@ class ReaperActionsQWeights:
         sorted_weights = sorted(self.inner_weigths_dict.items(), key=lambda x: x[1], reverse=True)
         return sorted_weights
 
+    def __repr__(self):
+        return 'ReaperActionsQWeights({0})'.format(self.inner_weigths_dict)
+
 
 def get_default_water_relations() -> dict[tuple[str, str], list[Any]]:
     water_reaper_relation = {
