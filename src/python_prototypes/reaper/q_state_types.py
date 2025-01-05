@@ -2,7 +2,7 @@
 this module contains classes and functions related to represent and
 initialize the q state of the game decision learning
 """
-
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
@@ -186,3 +186,9 @@ def convert_relation_to_tuple_key(relation: dict[tuple[str, str], list[Any]]) ->
 def convert_to_state_dict(relation: dict[tuple[str, str], list[Any]]) -> dict[tuple[str, str], int]:
     state_dict = {state_key: 1 if len(coordinates) > 0 else 0 for state_key, coordinates in relation.items()}
     return state_dict
+
+
+@dataclass
+class MissionStep:
+    q_state_key: tuple
+    goal_type: ReaperActionTypes

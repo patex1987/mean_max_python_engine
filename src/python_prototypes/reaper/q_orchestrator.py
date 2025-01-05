@@ -16,7 +16,7 @@ from python_prototypes.reaper.q_state_types import (
     ReaperActionsQWeights,
     get_default_water_relations,
     get_default_enemies_relation,
-    ReaperActionTypes,
+    ReaperActionTypes, MissionStep,
 )
 from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner, TargetAvailabilityState
 from python_prototypes.reaper.target_reached_determiner import get_goal_reached_determiner
@@ -29,36 +29,48 @@ class ReaperGameState:
     this is transferred between game rounds and can be mutated in an individual round
     """
 
-    def __init__(self):
-        self.current_goal_type: ReaperActionTypes | None = None
-        self._mission_set = False
-        self._current_target_info: SelectedTargetInformation | None = None
-        self._current_target_entity_type = None
-        # list of q state keys
-        # TODO: change this to a set
-        self._current_mission_steps: list[tuple] = []
-        self._q_table = {}
-        self._target_tracker: BaseTracker | None = None
+    def __init__(self, initial_q_table=None):
+        """
+        :param initial_q_table:
+
+        TODO: split this into smaller classes - divide and conquer and
+            prefer composition over inheritance.
+            - target info remains the same for one strategy
+            - mission steps are valid for one strategy
+            - target tracker is valid for one strategy
+            - planned game output path can change multiple times for one strategy
+            - q_table is global for the whole game duration, and ideally
+            you should be able to inject a pre filled q table
+        """
         self.exploration_rate = 0.2
         self.max_random_actions = 10  # make this configurable from the outside
+        self.current_target_info: SelectedTargetInformation | None = None
+        self._is_mission_set = False
+
+        self._mission_steps: list[MissionStep] = []  # list of q state keys
+        if not initial_q_table:
+            initial_q_table = {}
+        self._q_table = initial_q_table
+
+        self._target_tracker: BaseTracker | None = None
+
+        self._planned_game_output_path: list[str] | None = None
+
+    @property
+    def current_goal_type(self) -> ReaperActionTypes | None:
+        if not self._mission_steps:
+            return None
+        return self._mission_steps[-1].goal_type
 
     def is_on_mission(self):
-        return self._mission_set
+        return self._is_mission_set
 
     def initialize_new_goal_type(self, reaper_q_state: ReaperQState) -> ReaperActionTypes:
         new_goal = self.get_new_goal_type(reaper_q_state)
-        self.set_and_initialize_goal_type(new_goal)
+        # TODO: you need to speed up the retrieval of the state tuple key as it will be retrieved many times
+        state_key = reaper_q_state.get_state_tuple_key()
+        self.set_and_initialize_goal_type(state_key, new_goal)
         return new_goal
-
-    def update_existing_target_entity(self, target_unit_id, updated_grid_state: GridUnitState = None):
-        if target_unit_id != self._current_target_info.id:
-            raise ValueError('You are attempting to update a target, there is a different method for that')
-        if target_unit_id != updated_grid_state.unit.unit_id:
-            raise ValueError('You are attempting to update a target, where the id and the id in the grid_state differs')
-        if not updated_grid_state:
-            updated_grid_state = find_unit(full_grid_state, target_unit_id)
-
-        self._current_target_entity_type = updated_grid_state.unit.unit_type
 
     def get_new_goal_type(self, reaper_q_state: ReaperQState) -> ReaperActionTypes:
         q_state_key = reaper_q_state.get_state_tuple_key()
@@ -88,36 +100,42 @@ class ReaperGameState:
 
         return ReaperActionTypes.wait
 
-    def set_and_initialize_goal_type(self, new_goal_type: ReaperActionTypes):
-        self._mission_set = True
-        self._current_mission_steps = []
-        self.current_goal_type = new_goal_type
+    def set_and_initialize_goal_type(self, q_state_key: tuple,new_goal_type: ReaperActionTypes):
+        self._is_mission_set = True
+        self._mission_steps = []
+        self._mission_steps.append(MissionStep(q_state_key=q_state_key, goal_type=new_goal_type))
 
-    def propagate_failed_goal(self):
+    def propagate_failed_goal(self) -> None:
+        """
+        applies a failure penalty after a failed goal to every single step
+        in the current mission
+        :return:
+
+        TODO: merge this with propagate_successful_goal
+        """
+        for mission_step in self._mission_steps:
+            q_state_key = mission_step.q_state_key
+            goal_type = mission_step.goal_type
+            failure_penalty = get_goal_failure_penalty(goal_type)
+            reaper_q_action_weights = self._q_table.setdefault(
+                q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+            )
+            reaper_q_action_weights.inner_weigths_dict[goal_type] -= failure_penalty
+
+    def propagate_successful_goal(self) -> None:
         """
         applies a failure penalty after a failed goal to every single step
         in the current mission
         :return:
         """
-
-        # TODO: this is wrong, the current goal type changes every round
-        current_goal = self.current_goal_type
-        failure_penalty = get_goal_failure_penalty(current_goal)
-        for q_state_key in self._current_mission_steps:
+        for mission_step in self._mission_steps:
+            q_state_key = mission_step.q_state_key
+            goal_type = mission_step.goal_type
+            success_reward = get_goal_success_reward(goal_type)
             reaper_q_action_weights = self._q_table.setdefault(
                 q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
             )
-            reaper_q_action_weights.inner_weigths_dict[self.current_goal_type] -= failure_penalty
-
-    def propagate_successful_goal(self):
-        # TODO: this is wrong, the current goal type changes every round
-        current_goal = self.current_goal_type
-        success_reward = get_goal_success_reward(current_goal)
-        for q_state_key in self._current_mission_steps:
-            reaper_q_action_weights = self._q_table.setdefault(
-                q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
-            )
-            reaper_q_action_weights.inner_weigths_dict[self.current_goal_type] += success_reward
+            reaper_q_action_weights.inner_weigths_dict[goal_type] += success_reward
 
     def is_goal_possible(self, reaper_q_state: ReaperQState, goal_type: ReaperActionTypes) -> bool:
         """
@@ -150,13 +168,13 @@ class ReaperGameState:
         target_id_selector = get_target_id_selector(reaper_goal_type)
         selected_target = target_id_selector(reaper_q_state)
         if not selected_target:
-            self._current_target_info = None
+            self.current_target_info = None
             return None
-        self._current_target_info = selected_target
+        self.current_target_info = selected_target
         return selected_target
 
-    def add_current_step_to_mission(self, q_state_key: tuple):
-        self._current_mission_steps.append(q_state_key)
+    def add_current_step_to_mission(self, q_state_key: tuple, goal_type: ReaperActionTypes):
+        self._mission_steps.append(MissionStep(q_state_key, goal_type))
 
     def apply_step_penalty(self, q_state_key: tuple) -> None:
         reaper_q_action_weights = self._q_table.setdefault(
@@ -328,4 +346,3 @@ class TestReaperGameStateInitializeNewTarget:
         assert isinstance(reaper_game_state.current_goal_type, ReaperActionTypes)
         assert reaper_game_state._target_tracker is not None
         assert reaper_game_state._target_tracker.steps_taken == 0
-        assert reaper_game_state._current_target_entity_type is None

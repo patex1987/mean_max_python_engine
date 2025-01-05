@@ -69,7 +69,7 @@ def reaper_decider(
         # reaper_game_state.register_q_state(q_state_key)
         # TODO: move the next 3 lines to a dedicated method if possible
         q_state_key = reaper_q_state.get_state_tuple_key()
-        reaper_game_state.add_current_step_to_mission(q_state_key)
+        reaper_game_state.add_current_step_to_mission(q_state_key, new_reaper_goal_type)
         reaper_game_state.apply_step_penalty(q_state_key)
 
         if not new_target:
@@ -88,7 +88,7 @@ def reaper_decider(
             ReaperDecisionType.new_target_on_undefined, new_reaper_goal_type, target_grid_unit_state
         )
 
-    current_target = reaper_game_state._current_target_info
+    current_target = reaper_game_state.current_target_info
     actual_target_grid_unit_state = None
     if current_target:
         actual_target_grid_unit_state = find_target_grid_unit_state(
@@ -111,7 +111,7 @@ def reaper_decider(
 
         # TODO: see one of the TODOs above, duplicated from there
         q_state_key = reaper_q_state.get_state_tuple_key()
-        reaper_game_state.add_current_step_to_mission(q_state_key)
+        reaper_game_state.add_current_step_to_mission(q_state_key, new_reaper_goal_type)
         reaper_game_state.apply_step_penalty(q_state_key)
 
         if not new_target:
@@ -138,7 +138,7 @@ def reaper_decider(
 
         # TODO: see one of the TODOs above, duplicated from there
         q_state_key = reaper_q_state.get_state_tuple_key()
-        reaper_game_state.add_current_step_to_mission(q_state_key)
+        reaper_game_state.add_current_step_to_mission(q_state_key, new_reaper_goal_type)
         reaper_game_state.apply_step_penalty(q_state_key)
 
         if not new_target:
@@ -163,11 +163,10 @@ def reaper_decider(
     # TODO: move the next 3 lines to a dedicated method
     current_goal_type = reaper_game_state.current_goal_type
     adjusted_goal_type = get_updated_goal_type(reaper_q_state, current_target, current_goal_type)
-    reaper_game_state.current_goal_type = adjusted_goal_type
 
     q_state_key = reaper_q_state.get_state_tuple_key()
     reaper_game_state.register_q_state(q_state_key)
-    reaper_game_state.add_current_step_to_mission(q_state_key)
+    reaper_game_state.add_current_step_to_mission(q_state_key, adjusted_goal_type)
     reaper_game_state.apply_step_penalty(q_state_key)
 
     return ReaperDecisionOutput(ReaperDecisionType.existing_target, adjusted_goal_type, actual_target_grid_unit_state)
@@ -257,11 +256,12 @@ class TestReaperDecider:
         )
 
         reaper_game_state = ReaperGameState()
-        reaper_game_state._mission_set = True
-        reaper_game_state.current_goal_type = ReaperActionTypes.harvest_safe
-        reaper_game_state._current_target_info = SelectedTargetInformation(id=12345, type=EntitiesForReaper.WRECK)
+        reaper_game_state._is_mission_set = True
+
+        reaper_game_state.current_target_info = SelectedTargetInformation(id=12345, type=EntitiesForReaper.WRECK)
         q_state_key = reaper_q_state.get_state_tuple_key()
-        reaper_game_state.add_current_step_to_mission(q_state_key=q_state_key)
+        reaper_game_state.add_current_step_to_mission(q_state_key=q_state_key, goal_type=ReaperActionTypes.harvest_safe)
+        assert reaper_game_state.current_goal_type == ReaperActionTypes.harvest_safe
 
         decision_output = reaper_decider(
             reaper_game_state=reaper_game_state,
@@ -272,6 +272,11 @@ class TestReaperDecider:
 
         assert decision_output.decision_type == ReaperDecisionType.new_target_on_failure
         assert decision_output.goal_action_type is not None
+
+        assert len(reaper_game_state._q_table) == 1
+        harvest_failure_penalty = 0.5
+        q_weights = reaper_game_state._q_table[q_state_key]
+        assert q_weights.inner_weigths_dict[ReaperActionTypes.harvest_safe] == -harvest_failure_penalty
 
     def test_wait_goal_target_availability_checking(self):
         """
@@ -293,8 +298,8 @@ class TestReaperDecider:
         )
 
         reaper_game_state = ReaperGameState()
-        reaper_game_state._mission_set = True
-        reaper_game_state.current_goal_type = ReaperActionTypes.wait
+        reaper_game_state._is_mission_set = True
+        reaper_game_state.add_current_step_to_mission(reaper_q_state.get_state_tuple_key(), ReaperActionTypes.wait)
         tracker = get_target_tracker(reaper_game_state.current_goal_type)
         reaper_game_state._target_tracker = tracker
         reaper_game_state._target_tracker.track(player_state.reaper_state, None)
@@ -337,10 +342,10 @@ class TestReaperDecider:
         )
 
         reaper_game_state = ReaperGameState()
-        reaper_game_state._mission_set = True
+        reaper_game_state._is_mission_set = True
         # there is a close, close reaper available in the grid
-        reaper_game_state.current_goal_type = ReaperActionTypes.ram_other_close
-        reaper_game_state._current_target_info = SelectedTargetInformation(
+        reaper_game_state.add_current_step_to_mission(reaper_q_state.get_state_tuple_key(), ReaperActionTypes.ram_other_close)
+        reaper_game_state.current_target_info = SelectedTargetInformation(
             id=target_unit.unit.unit_id, type=EntitiesForReaper.OTHER_ENEMY
         )
 
