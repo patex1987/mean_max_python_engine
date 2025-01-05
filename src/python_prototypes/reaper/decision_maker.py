@@ -96,6 +96,11 @@ def reaper_decider(
             target=current_target,
         )
 
+    if actual_target_grid_unit_state:
+        reaper_game_state._target_tracker.track(
+            player_reaper_unit=player_state.reaper_state, target_unit=actual_target_grid_unit_state
+        )
+
     # TODO: change is_goal_target_available's return `TargetAvailabilityState` to tell if the goal was reached
     target_availability = reaper_game_state.get_goal_target_availability(
         target_grid_unit=actual_target_grid_unit_state,
@@ -155,10 +160,6 @@ def reaper_decider(
         return ReaperDecisionOutput(
             ReaperDecisionType.new_target_on_success, new_reaper_goal_type, target_grid_unit_state
         )
-
-    reaper_game_state._target_tracker.track(
-        player_reaper_unit=player_state.reaper_state, target_unit=actual_target_grid_unit_state
-    )
 
     # TODO: move the next 3 lines to a dedicated method
     current_goal_type = reaper_game_state.current_goal_type
@@ -261,6 +262,8 @@ class TestReaperDecider:
         reaper_game_state.current_target_info = SelectedTargetInformation(id=12345, type=EntitiesForReaper.WRECK)
         q_state_key = reaper_q_state.get_state_tuple_key()
         reaper_game_state.add_current_step_to_mission(q_state_key=q_state_key, goal_type=ReaperActionTypes.harvest_safe)
+        tracker = get_target_tracker(reaper_game_state.current_goal_type)
+        reaper_game_state._target_tracker = tracker
         assert reaper_game_state.current_goal_type == ReaperActionTypes.harvest_safe
 
         decision_output = reaper_decider(
@@ -381,9 +384,60 @@ class TestReaperDecider:
 
     def test_target_reached_successful(self):
         """
-        TODO: do this next and validate the propagation into the q state
+        This is emulating a full-blown reaper decision consisting of 2
+        rounds. There is only one other enemy marked as close (close,
+        close), we are using a test double that selects ram_other_close.
+        So after the first round that enemy is selected. For the second
+        round we are faking the move to actually reach the target and
+        fake higher energy so that the strategy successfully ends and
+        rams into the enemy
         """
-        pass
+        class FakeReaperGameState(ReaperGameState):
+            def get_new_goal_type(self, reaper_q_state: ReaperQState) -> ReaperActionTypes:
+                return ReaperActionTypes.ram_other_close
+
+        game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
+        player_state = ExampleBasicScenarioIncomplete.get_example_player_state()
+
+        reaper_q_state = calculate_reaper_q_state(
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )
+
+        expected_target_unit = find_target_grid_unit_state(
+            game_grid_information=game_grid_information,
+            target=SelectedTargetInformation(id=2, type=EntitiesForReaper.OTHER_ENEMY),
+        )
+        reaper_game_state = FakeReaperGameState()
+
+        # first round
+        decision_output = reaper_decider(
+            reaper_game_state=reaper_game_state,
+            reaper_q_state=reaper_q_state,
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )
+        assert decision_output.decision_type == ReaperDecisionType.new_target_on_undefined
+        assert decision_output.target_grid_unit.unit.unit_id == expected_target_unit.unit.unit_id
+        assert decision_output.goal_action_type == ReaperActionTypes.ram_other_close
+
+        # second round
+
+        # move player's reaper to the goal
+        player_state.reaper_state.grid_coordinate = expected_target_unit.grid_coordinate
+        player_state.reaper_state.unit.x = expected_target_unit.unit.x - 1
+        player_state.reaper_state.unit.y = expected_target_unit.unit.y - 1
+        player_state.reaper_state.unit.mass = 1000
+        player_state.reaper_state.unit.vx = expected_target_unit.unit.x
+        player_state.reaper_state.unit.vy = expected_target_unit.unit.y
+
+        decision_output = reaper_decider(
+            reaper_game_state=reaper_game_state,
+            reaper_q_state=reaper_q_state,
+            game_grid_information=game_grid_information,
+            player_state=player_state,
+        )
+        assert decision_output.decision_type == ReaperDecisionType.new_target_on_success
 
     def test_target_reached_failed(self):
         """

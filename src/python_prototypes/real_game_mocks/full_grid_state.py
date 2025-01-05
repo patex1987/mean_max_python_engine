@@ -24,6 +24,7 @@ class ExampleBasicScenarioIncomplete:
         vy=0,
         radius=30,
         unit_id=1,
+        mass=10,
         player=PlayerFieldTypes.ENEMY_1.value,
     )
     enemy_2_destroyer = Unit(
@@ -34,13 +35,14 @@ class ExampleBasicScenarioIncomplete:
         vy=0,
         radius=30,
         unit_id=2,
+        mass=10,
         player=PlayerFieldTypes.ENEMY_2.value,
     )
     tanker_1 = Unit(
-        unit_type=Entity.TANKER.value, x=2800, y=400, vx=-0.98994, vy=-0.141421, radius=30, unit_id=3, player=None
+        unit_type=Entity.TANKER.value, x=2800, y=400, vx=-0.98994, vy=-0.141421, radius=30, unit_id=3, player=PlayerFieldTypes.ENEMY_1.value, mass=20
     )
     tanker_2 = Unit(
-        unit_type=Entity.TANKER.value, x=2800, y=2600, vx=-0.707, vy=-0.707, radius=30, unit_id=4, player=None
+        unit_type=Entity.TANKER.value, x=2800, y=2600, vx=-0.707, vy=-0.707, radius=30, unit_id=4, player=PlayerFieldTypes.ENEMY_2.value, mass=20
     )
     player_doof = Unit(
         unit_type=Entity.DOOF.value,
@@ -51,6 +53,7 @@ class ExampleBasicScenarioIncomplete:
         radius=30,
         unit_id=5,
         player=PlayerFieldTypes.PLAYER.value,
+        mass=10,
     )
     player_destroyer = Unit(
         unit_type=Entity.DESTROYER.value,
@@ -61,6 +64,7 @@ class ExampleBasicScenarioIncomplete:
         radius=30,
         unit_id=6,
         player=PlayerFieldTypes.PLAYER.value,
+        mass=20
     )
     player_reaper = Unit(
         unit_type=Entity.REAPER.value,
@@ -71,6 +75,7 @@ class ExampleBasicScenarioIncomplete:
         radius=30,
         unit_id=7,
         player=PlayerFieldTypes.PLAYER.value,
+        mass=30
     )
 
     @classmethod

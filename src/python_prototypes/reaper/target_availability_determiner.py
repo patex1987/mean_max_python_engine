@@ -26,6 +26,8 @@ def get_goal_target_determiner(
             if you add the GridUnitState of the player, then you can
             calculate everything directly in the callables, won't be needed
             to store that much information in the Tracker object
+        TODO: use the manhattan distances to speed up lookups, and calculate
+            euclidean distance only on demand
     """
     match current_goal_type:
         case ReaperActionTypes.harvest_safe:
@@ -130,7 +132,7 @@ def ram_target_obj_available(
 
     # TODO: move this to a dedicated configuration
     # need to replan on every round, as the target object is moving
-    replan_round_threshold = 1
+    replan_round_threshold = 2
     total_round_threshold = 10
     target_ram_distance_threshold = 25  # not sure about this, depends on the radius of the enemy reaper
     target_speed_check_threshold = 30 * target_ram_distance_threshold

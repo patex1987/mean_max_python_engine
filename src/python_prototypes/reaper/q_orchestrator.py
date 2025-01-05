@@ -19,7 +19,6 @@ from python_prototypes.reaper.q_state_types import (
     ReaperActionTypes, MissionStep,
 )
 from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner, TargetAvailabilityState
-from python_prototypes.reaper.target_reached_determiner import get_goal_reached_determiner
 from python_prototypes.reaper.target_selector import get_target_id_selector, SelectedTargetInformation
 from python_prototypes.reaper.target_tracker_determiner import get_target_tracker, BaseTracker
 
@@ -154,11 +153,6 @@ class ReaperGameState:
         goal_target_determiner = get_goal_target_determiner(self.current_goal_type)
         is_available = goal_target_determiner(target_grid_unit, game_grid_information, tracker)
         return is_available
-
-    def is_goal_reached(self, current_goal):
-        reachability_determiner = get_goal_reached_determiner(current_goal)
-        is_reached = reachability_determiner(self._reaper_q_state)
-        return is_reached
 
     def initialize_new_target(
         self, reaper_goal_type: ReaperActionTypes, reaper_q_state: ReaperQState

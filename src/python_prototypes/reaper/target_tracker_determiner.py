@@ -13,6 +13,14 @@ from python_prototypes.reaper.q_state_types import ReaperActionTypes
 
 
 def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> 'BaseTracker':
+    """
+    :param reaper_goal_type:
+    :return:
+
+    TODO: use the manhattan distances to speed up lookups, and calculate
+            euclidean distance only on demand
+    """
+
     match reaper_goal_type:
         case ReaperActionTypes.harvest_safe:
             return StaticTargetTracker()
@@ -131,10 +139,12 @@ class StaticTargetTracker(BaseTracker):
         return len(self.manhattan_distances_from_target)
 
     def is_distance_growing(self, round_threshold: int) -> bool:
+        if round_threshold < 2:
+            return False
         if len(self.manhattan_distance_changes) < round_threshold:
             return False
-        last_n_changes = self.euclidean_distance_changes[:-round_threshold]
-        is_growing = all(x >= 0 for x in last_n_changes)
+        last_n_changes = self.euclidean_distance_changes[-round_threshold:]
+        is_growing = any(map(lambda pair: pair[0] > pair[1], zip(last_n_changes[1:], last_n_changes[:-1])))
         return is_growing
 
     def total_round_threshold_breached(self, round_threshold: int) -> bool:
@@ -224,10 +234,12 @@ class DynamicTargetTracker(BaseTracker):
         return len(self.manhattan_distances_from_target)
 
     def is_distance_growing(self, round_threshold: int) -> bool:
+        if round_threshold < 2:
+            return False
         if len(self.manhattan_distance_changes) < round_threshold:
             return False
-        last_n_changes = self.euclidean_distance_changes[:-round_threshold]
-        is_growing = all(x >= 0 for x in last_n_changes)
+        last_n_changes = self.euclidean_distance_changes[-round_threshold:]
+        is_growing = any(map(lambda pair: pair[0] > pair[1], zip(last_n_changes[1:], last_n_changes[:-1])))
         return is_growing
 
     def total_round_threshold_breached(self, round_threshold: int) -> bool:
