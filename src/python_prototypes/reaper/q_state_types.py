@@ -2,6 +2,7 @@
 this module contains classes and functions related to represent and
 initialize the q state of the game decision learning
 """
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any

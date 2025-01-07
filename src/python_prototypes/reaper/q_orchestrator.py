@@ -16,7 +16,8 @@ from python_prototypes.reaper.q_state_types import (
     ReaperActionsQWeights,
     get_default_water_relations,
     get_default_enemies_relation,
-    ReaperActionTypes, MissionStep,
+    ReaperActionTypes,
+    MissionStep,
 )
 from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner, TargetAvailabilityState
 from python_prototypes.reaper.target_selector import get_target_id_selector, SelectedTargetInformation
@@ -51,7 +52,7 @@ class ReaperGameState:
             initial_q_table = {}
         self._q_table = initial_q_table
 
-        self._target_tracker: BaseTracker | None = None
+        self.target_tracker: BaseTracker | None = None
 
         self._planned_game_output_path: list[str] | None = None
 
@@ -99,10 +100,10 @@ class ReaperGameState:
 
         return ReaperActionTypes.wait
 
-    def set_and_initialize_goal_type(self, q_state_key: tuple,new_goal_type: ReaperActionTypes):
+    def set_and_initialize_goal_type(self, q_state_key: tuple, new_goal_type: ReaperActionTypes):
         self._is_mission_set = True
         self._mission_steps = []
-        self._mission_steps.append(MissionStep(q_state_key=q_state_key, goal_type=new_goal_type))
+        self.add_current_step_to_mission(q_state_key=q_state_key, goal_type=new_goal_type)
 
     def propagate_failed_goal(self) -> None:
         """
@@ -120,6 +121,7 @@ class ReaperGameState:
                 q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
             )
             reaper_q_action_weights.inner_weigths_dict[goal_type] -= failure_penalty
+            self._q_table[q_state_key] = reaper_q_action_weights
 
     def propagate_successful_goal(self) -> None:
         """
@@ -135,6 +137,7 @@ class ReaperGameState:
                 q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
             )
             reaper_q_action_weights.inner_weigths_dict[goal_type] += success_reward
+            self._q_table[q_state_key] = reaper_q_action_weights
 
     def is_goal_possible(self, reaper_q_state: ReaperQState, goal_type: ReaperActionTypes) -> bool:
         """
@@ -158,7 +161,7 @@ class ReaperGameState:
         self, reaper_goal_type: ReaperActionTypes, reaper_q_state: ReaperQState
     ) -> SelectedTargetInformation | None:
         target_tracker = get_target_tracker(reaper_goal_type)
-        self._target_tracker = target_tracker
+        self.target_tracker = target_tracker
         target_id_selector = get_target_id_selector(reaper_goal_type)
         selected_target = target_id_selector(reaper_q_state)
         if not selected_target:
@@ -193,7 +196,7 @@ def get_goal_failure_penalty(current_goal: ReaperActionTypes) -> float:
     :param current_goal:
     :return:
     """
-    return 0.5
+    return 10.0
 
 
 def get_goal_success_reward(current_goal: ReaperActionTypes) -> float:
@@ -202,7 +205,7 @@ def get_goal_success_reward(current_goal: ReaperActionTypes) -> float:
     :param current_goal:
     :return:
     """
-    return 1.0
+    return 10.0
 
 
 def find_target_grid_unit_state(
@@ -338,5 +341,5 @@ class TestReaperGameStateInitializeNewTarget:
         assert reaper_game_state.is_on_mission() is True
         assert reaper_game_state.current_goal_type is not None
         assert isinstance(reaper_game_state.current_goal_type, ReaperActionTypes)
-        assert reaper_game_state._target_tracker is not None
-        assert reaper_game_state._target_tracker.steps_taken == 0
+        assert reaper_game_state.target_tracker is not None
+        assert reaper_game_state.target_tracker.steps_taken == 0
