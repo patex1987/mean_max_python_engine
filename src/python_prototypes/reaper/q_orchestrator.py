@@ -264,6 +264,8 @@ def get_updated_goal_type(
     :param current_goal_type:
     :return:
     """
+    if not current_target:
+        return None
     target_id = current_target.id
     match current_goal_type:
         case ReaperActionTypes.harvest_safe | ReaperActionTypes.harvest_risky | ReaperActionTypes.harvest_dangerous:

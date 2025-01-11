@@ -96,11 +96,6 @@ def reaper_decider(
             game_grid_information=game_grid_information,
             target=current_target,
         )
-        current_goal_type = reaper_game_state.current_goal_type
-        adjusted_goal_type = get_updated_goal_type(reaper_q_state, current_target, current_goal_type)
-        actual_goal_type = adjusted_goal_type or current_goal_type
-        reaper_game_state.add_current_step_to_mission(q_state_key, actual_goal_type)
-        reaper_game_state.apply_step_penalty(q_state_key)
 
     if actual_target_grid_unit_state:
         reaper_game_state.target_tracker.track(
@@ -112,6 +107,13 @@ def reaper_decider(
         game_grid_information=game_grid_information,
         tracker=reaper_game_state.target_tracker,
     )
+    current_goal_type = reaper_game_state.current_goal_type
+    adjusted_goal_type = get_updated_goal_type(reaper_q_state, current_target, current_goal_type)
+    # TODO: the next line can be decided based on the `TargetAvailabilityState.invalid` state
+    actual_goal_type = adjusted_goal_type or current_goal_type
+    reaper_game_state.add_current_step_to_mission(q_state_key, actual_goal_type)
+    reaper_game_state.apply_step_penalty(q_state_key)
+
     if target_availability == TargetAvailabilityState.invalid:
         reaper_game_state.propagate_failed_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
