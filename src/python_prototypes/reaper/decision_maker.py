@@ -59,35 +59,20 @@ def reaper_decider(
 
     """
     q_state_key = reaper_q_state.get_state_tuple_key()
+    reaper_game_state.register_q_state(q_state_key)
     on_mission = reaper_game_state.is_on_mission()
 
     if not on_mission:
-        new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
-        new_target = reaper_game_state.initialize_new_target(
-            reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
+        decision_output = get_new_decision(
+            game_grid_information,
+            player_state,
+            reaper_game_state,
+            reaper_q_state,
+            ReaperDecisionType.new_target_on_undefined,
         )
         # registration is not needed, as it is already registered by the above lines
-        # reaper_game_state.register_q_state(q_state_key)
-        # TODO: move the next 2 lines to a dedicated method if possible
         reaper_game_state.apply_step_penalty(q_state_key)
-
-        if not new_target:
-            return ReaperDecisionOutput(ReaperDecisionType.new_target_on_undefined, new_reaper_goal_type, None)
-
-        target_grid_unit_state = find_target_grid_unit_state(
-            game_grid_information=game_grid_information,
-            target=new_target,
-        )
-        # TODO: call to target tracker needs to be encapsulated inside the reaper_game_state
-        reaper_game_state.target_tracker.track(
-            player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
-        )
-
-        return ReaperDecisionOutput(
-            ReaperDecisionType.new_target_on_undefined, new_reaper_goal_type, target_grid_unit_state
-        )
-
-    reaper_game_state.register_q_state(q_state_key)
+        return decision_output
 
     current_target = reaper_game_state.current_target_info
     actual_target_grid_unit_state = None
@@ -116,60 +101,58 @@ def reaper_decider(
 
     if target_availability == TargetAvailabilityState.invalid:
         reaper_game_state.propagate_failed_goal()
-        new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
-        new_target = reaper_game_state.initialize_new_target(
-            reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
+        new_decision = get_new_decision(
+            game_grid_information,
+            player_state,
+            reaper_game_state,
+            reaper_q_state,
+            ReaperDecisionType.new_target_on_failure,
         )
-
         # TODO: see one of the TODOs above, duplicated from there
-        reaper_game_state.add_current_step_to_mission(q_state_key, new_reaper_goal_type)
+        reaper_game_state.add_current_step_to_mission(q_state_key, new_decision.goal_action_type)
         reaper_game_state.apply_step_penalty(q_state_key)
-
-        if not new_target:
-            return ReaperDecisionOutput(ReaperDecisionType.new_target_on_failure, new_reaper_goal_type, None)
-
-        target_grid_unit_state = find_target_grid_unit_state(
-            game_grid_information=game_grid_information,
-            target=new_target,
-        )
-        reaper_game_state.target_tracker.track(
-            player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
-        )
-
-        return ReaperDecisionOutput(
-            ReaperDecisionType.new_target_on_failure, new_reaper_goal_type, target_grid_unit_state
-        )
+        return new_decision
 
     if target_availability == TargetAvailabilityState.goal_reached_success:
         reaper_game_state.propagate_successful_goal()
-
-        new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
-        new_target = reaper_game_state.initialize_new_target(
-            reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
+        new_decision = get_new_decision(
+            game_grid_information,
+            player_state,
+            reaper_game_state,
+            reaper_q_state,
+            ReaperDecisionType.new_target_on_success,
         )
-
         # TODO: see one of the TODOs above, duplicated from there
-        q_state_key = reaper_q_state.get_state_tuple_key()
-        reaper_game_state.add_current_step_to_mission(q_state_key, new_reaper_goal_type)
+        reaper_game_state.add_current_step_to_mission(q_state_key, new_decision.goal_action_type)
         reaper_game_state.apply_step_penalty(q_state_key)
-
-        if not new_target:
-            return ReaperDecisionOutput(ReaperDecisionType.new_target_on_success, new_reaper_goal_type, None)
-
-        target_grid_unit_state = find_target_grid_unit_state(
-            game_grid_information=game_grid_information,
-            target=new_target,
-        )
-        reaper_game_state.target_tracker.track(
-            player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
-        )
-
-        return ReaperDecisionOutput(
-            ReaperDecisionType.new_target_on_success, new_reaper_goal_type, target_grid_unit_state
-        )
+        return new_decision
 
     adjusted_goal_type = reaper_game_state.current_goal_type
     return ReaperDecisionOutput(ReaperDecisionType.existing_target, adjusted_goal_type, actual_target_grid_unit_state)
+
+
+def get_new_decision(
+    game_grid_information: GameGridInformation,
+    player_state: PlayerState,
+    reaper_game_state: ReaperGameState,
+    reaper_q_state: ReaperQState,
+    output_type: ReaperDecisionType,
+) -> ReaperDecisionOutput:
+    new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
+    new_target = reaper_game_state.initialize_new_target(
+        reaper_goal_type=new_reaper_goal_type, reaper_q_state=reaper_q_state
+    )
+    if not new_target:
+        return ReaperDecisionOutput(output_type, new_reaper_goal_type, None)
+    target_grid_unit_state = find_target_grid_unit_state(
+        game_grid_information=game_grid_information,
+        target=new_target,
+    )
+    # TODO: call to target tracker needs to be encapsulated inside the reaper_game_state
+    reaper_game_state.target_tracker.track(
+        player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
+    )
+    return ReaperDecisionOutput(output_type, new_reaper_goal_type, target_grid_unit_state)
 
 
 class TestReaperDecider:
