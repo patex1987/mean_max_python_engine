@@ -26,7 +26,9 @@ from python_prototypes.reaper.q_orchestrator import ReaperGameState
 
 def original_game_main():
 
-    q_state_action_weights: dict[tuple, dict[str, float]] = {}
+    # q_state_action_weights: dict[tuple, dict[str, float]] = {}
+    reaper_game_state = ReaperGameState()
+    main_game_engine
 
     # game loop
     while True:
@@ -39,7 +41,6 @@ def original_game_main():
         unit_count = int(input())
 
         full_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
-
         wreck_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
         wreck_id_to_grid_coord: dict[Any, tuple[int, int]] = {}
         tanker_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
@@ -51,7 +52,6 @@ def original_game_main():
         player_reaper_grid_unit = None
         player_destroyer_grid_unit = None
         player_doof_grid_unit = None
-        reaper_game_state = ReaperGameState()
 
         for i in range(unit_count):
             inputs = input().split()
@@ -147,7 +147,7 @@ def original_game_main():
             game_grid_information=game_grid_information,
             player_state=player_state,
         )
-        reaper_decision
+
         print("WAIT")
         print("WAIT")
         print("WAIT")

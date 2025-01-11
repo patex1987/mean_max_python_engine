@@ -234,10 +234,6 @@ impl Doof {
             friction: 0.25,
         }
     }
-
-    fn enough_rage_for_oil() {
-        
-    }
 }
 
 impl fmt::Display for Doof {
@@ -434,9 +430,6 @@ impl fmt::Display for OilPool {
 
 // ------------------
 
-///
-/// Currently finds the fartest destroyer, that way we should theoretically increase the rage
-/// 
 fn find_doof_target(player_doof_ref: Option<&Doof>, destoyers: Vec<&Destroyer>) -> Coordinate {
     // let closest_destroyer_index = destoyers
     //     .iter()
@@ -690,6 +683,18 @@ fn main() {
             };
         }
 
+        // eprintln!("Wreck positions: {:?}", wreck_coordinates);
+        // eprintln!("Tanker positions: {:?}", tanker_coordinates);
+
+        // eprintln!("Wreck objects: {:?}", wrecks);
+        // eprintln!("Tanker objects: {:?}", tankers);
+        // eprintln!("Reaper objects: {:?}", reapers);
+        // eprintln!("Destroyer objects: {:?}", destroyers);
+        // eprintln!("Doof objects: {:?}", doofs);
+
+        // Write an action using println!("message...");
+        // To debug: eprintln!("Debug message...");
+
         let doof_target: Coordinate =
             find_doof_target(my_doof.as_ref(), destroyers.iter().skip(1).collect());
         // Reaper
@@ -698,22 +703,23 @@ fn main() {
         let selected_x = (chosen_wreck.x as f64 - (my_reaper_speed.vx as f64 * 1.5)) as i32;
         let selected_y = (chosen_wreck.y as f64 - (my_reaper_speed.vy as f64 * 1.5)) as i32;
 
-        // eprintln!(
-        //     "Round: {}, speed: {} - i.e. {}, position: {}, ({}, {})",
-        //     round_nr,
-        //     my_reaper_speed,
-        //     my_reaper_speed.absolute_speed(),
-        //     my_reaper.as_ref().expect("No Reaper").unit.coordinate,
-        //     selected_x,
-        //     selected_y
-        // );
+        eprintln!(
+            "Round: {}, speed: {} - i.e. {}, position: {}, ({}, {})",
+            round_nr,
+            my_reaper_speed,
+            my_reaper_speed.absolute_speed(),
+            my_reaper.as_ref().expect("No Reaper").unit.coordinate,
+            selected_x,
+            selected_y
+        );
 
         if round_nr < 3 {
             println!("{} {} 200 Reaper", selected_x, selected_y);
         }
         else {
             // println!("{} {} 0 Reaper", selected_x, selected_y);
-            println!("{} {} 0 Reaper", -my_reaper_speed.vx, -my_reaper_speed.vy);
+            // println!("{} {} 0 Reaper", -my_reaper_speed.vx, -my_reaper_speed.vy);
+            println!("WAIT Reaper {} {}", my_reaper_speed.vx, my_reaper_speed.vy);
         }
         
         // Destroyer

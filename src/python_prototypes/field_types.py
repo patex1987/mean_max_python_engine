@@ -16,6 +16,7 @@ class Entity(Enum):
     TAR_POOL = 5
     OIL_POOL = 6
 
+
 class EntitiesForReaper(Enum):
     REAPER = 0
     DESTROYER = 1

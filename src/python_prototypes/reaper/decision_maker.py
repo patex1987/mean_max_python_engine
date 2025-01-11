@@ -128,7 +128,10 @@ def reaper_decider(
         return new_decision
 
     adjusted_goal_type = reaper_game_state.current_goal_type
-    return ReaperDecisionOutput(ReaperDecisionType.existing_target, adjusted_goal_type, actual_target_grid_unit_state)
+    decision_type = ReaperDecisionType.existing_target
+    if target_availability == TargetAvailabilityState.replan_reach:
+        decision_type = ReaperDecisionType.replan_existing_target
+    return ReaperDecisionOutput(decision_type, adjusted_goal_type, actual_target_grid_unit_state)
 
 
 def get_new_decision(

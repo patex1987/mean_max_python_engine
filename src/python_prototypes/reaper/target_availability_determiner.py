@@ -145,7 +145,7 @@ def ram_target_obj_available(
 
     within_collision_threshold = target_tracker.is_within_collision_radius()
     if not within_collision_threshold:
-        if not target_tracker.is_moving_towards_target():
+        if target_tracker.is_moving_towards_target():
             return TargetAvailabilityState.valid
         return TargetAvailabilityState.replan_reach
 

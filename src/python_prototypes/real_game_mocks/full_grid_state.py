@@ -12,8 +12,10 @@ from python_prototypes.field_types import (
     PlayerFieldTypes,
     GRID_COORD_UNIT_STATE_T,
     GridUnitState,
-    GameGridInformation, PlayerState,
+    GameGridInformation,
+    PlayerState,
 )
+
 
 class ExampleBasicScenarioIncomplete:
     enemy_1_destroyer = Unit(
@@ -39,10 +41,26 @@ class ExampleBasicScenarioIncomplete:
         player=PlayerFieldTypes.ENEMY_2.value,
     )
     tanker_1 = Unit(
-        unit_type=Entity.TANKER.value, x=2800, y=400, vx=-0.98994, vy=-0.141421, radius=30, unit_id=3, player=PlayerFieldTypes.ENEMY_1.value, mass=20
+        unit_type=Entity.TANKER.value,
+        x=2800,
+        y=400,
+        vx=-0.98994,
+        vy=-0.141421,
+        radius=30,
+        unit_id=3,
+        player=PlayerFieldTypes.ENEMY_1.value,
+        mass=20,
     )
     tanker_2 = Unit(
-        unit_type=Entity.TANKER.value, x=2800, y=2600, vx=-0.707, vy=-0.707, radius=30, unit_id=4, player=PlayerFieldTypes.ENEMY_2.value, mass=20
+        unit_type=Entity.TANKER.value,
+        x=2800,
+        y=2600,
+        vx=-0.707,
+        vy=-0.707,
+        radius=30,
+        unit_id=4,
+        player=PlayerFieldTypes.ENEMY_2.value,
+        mass=20,
     )
     player_doof = Unit(
         unit_type=Entity.DOOF.value,
@@ -64,7 +82,7 @@ class ExampleBasicScenarioIncomplete:
         radius=30,
         unit_id=6,
         player=PlayerFieldTypes.PLAYER.value,
-        mass=20
+        mass=20,
     )
     player_reaper = Unit(
         unit_type=Entity.REAPER.value,
@@ -75,7 +93,7 @@ class ExampleBasicScenarioIncomplete:
         radius=30,
         unit_id=7,
         player=PlayerFieldTypes.PLAYER.value,
-        mass=30
+        mass=30,
     )
 
     @classmethod
@@ -99,7 +117,7 @@ class ExampleBasicScenarioIncomplete:
             cls.tanker_2,
             cls.player_doof,
             cls.player_destroyer,
-            cls.player_reaper
+            cls.player_reaper,
         ):
             grid_coordinate = get_grid_position(coordinate=(unit.x, unit.y))
             grid_unit = GridUnitState(grid_coordinate, unit)
