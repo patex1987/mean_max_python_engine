@@ -58,6 +58,7 @@ def reaper_decider(
     :return: ReaperDecisionOutput
 
     """
+    q_state_key = reaper_q_state.get_state_tuple_key()
     on_mission = reaper_game_state.is_on_mission()
 
     if not on_mission:
@@ -68,7 +69,6 @@ def reaper_decider(
         # registration is not needed, as it is already registered by the above lines
         # reaper_game_state.register_q_state(q_state_key)
         # TODO: move the next 2 lines to a dedicated method if possible
-        q_state_key = reaper_q_state.get_state_tuple_key()
         reaper_game_state.apply_step_penalty(q_state_key)
 
         if not new_target:
@@ -87,6 +87,8 @@ def reaper_decider(
             ReaperDecisionType.new_target_on_undefined, new_reaper_goal_type, target_grid_unit_state
         )
 
+    reaper_game_state.register_q_state(q_state_key)
+
     current_target = reaper_game_state.current_target_info
     actual_target_grid_unit_state = None
     if current_target:
@@ -94,6 +96,11 @@ def reaper_decider(
             game_grid_information=game_grid_information,
             target=current_target,
         )
+        current_goal_type = reaper_game_state.current_goal_type
+        adjusted_goal_type = get_updated_goal_type(reaper_q_state, current_target, current_goal_type)
+        actual_goal_type = adjusted_goal_type or current_goal_type
+        reaper_game_state.add_current_step_to_mission(q_state_key, actual_goal_type)
+        reaper_game_state.apply_step_penalty(q_state_key)
 
     if actual_target_grid_unit_state:
         reaper_game_state.target_tracker.track(
@@ -106,11 +113,6 @@ def reaper_decider(
         tracker=reaper_game_state.target_tracker,
     )
     if target_availability == TargetAvailabilityState.invalid:
-        # TODO: goal_type=reaper_game_state.current_goal_type is not valid (up to date),
-        #   it needs to be updated, potentially can be updated outside of the if statements
-        reaper_game_state.add_current_step_to_mission(
-            reaper_q_state.get_state_tuple_key(), goal_type=reaper_game_state.current_goal_type
-        )
         reaper_game_state.propagate_failed_goal()
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
         new_target = reaper_game_state.initialize_new_target(
@@ -118,7 +120,6 @@ def reaper_decider(
         )
 
         # TODO: see one of the TODOs above, duplicated from there
-        q_state_key = reaper_q_state.get_state_tuple_key()
         reaper_game_state.add_current_step_to_mission(q_state_key, new_reaper_goal_type)
         reaper_game_state.apply_step_penalty(q_state_key)
 
@@ -138,11 +139,6 @@ def reaper_decider(
         )
 
     if target_availability == TargetAvailabilityState.goal_reached_success:
-        # TODO: goal_type=reaper_game_state.current_goal_type is not valid (up to date),
-        #   it needs to be updated, potentially can be updated outside of the if statements
-        reaper_game_state.add_current_step_to_mission(
-            reaper_q_state.get_state_tuple_key(), goal_type=reaper_game_state.current_goal_type
-        )
         reaper_game_state.propagate_successful_goal()
 
         new_reaper_goal_type = reaper_game_state.initialize_new_goal_type(reaper_q_state)
@@ -170,15 +166,7 @@ def reaper_decider(
             ReaperDecisionType.new_target_on_success, new_reaper_goal_type, target_grid_unit_state
         )
 
-    # TODO: move the next 2 lines to a dedicated method
-    current_goal_type = reaper_game_state.current_goal_type
-    adjusted_goal_type = get_updated_goal_type(reaper_q_state, current_target, current_goal_type)
-
-    q_state_key = reaper_q_state.get_state_tuple_key()
-    reaper_game_state.register_q_state(q_state_key)
-    reaper_game_state.add_current_step_to_mission(q_state_key, adjusted_goal_type)
-    reaper_game_state.apply_step_penalty(q_state_key)
-
+    adjusted_goal_type = reaper_game_state.current_goal_type
     return ReaperDecisionOutput(ReaperDecisionType.existing_target, adjusted_goal_type, actual_target_grid_unit_state)
 
 
@@ -399,6 +387,12 @@ class TestReaperDecider:
         strategy successfully ends and rams into the enemy
 
         there should be only 2 keys in the q table after the 2 rounds
+        - the score of the first q state should be 9.5 (10 for the successful
+            goal) and -0.5 for the step penalty
+        - the score of the second q state should be 9.0 (10 for the successful
+            goal) and (2 * -0.5) for the step penalty.
+                - -0.5 for the initial goal
+                - -0.5 for the newly selected goal
         """
 
         class FakeReaperGameState(ReaperGameState):
@@ -474,7 +468,7 @@ class TestReaperDecider:
         )
         assert (
             q_table[reaper_q_state_round_2.get_state_tuple_key()].inner_weigths_dict[ReaperActionTypes.ram_other_close]
-            == 9.5
+            == 9.0
         )
 
     def test_target_reached_failed(self):
@@ -489,6 +483,12 @@ class TestReaperDecider:
         selected.
 
         there should be only 2 keys in the q table after the 2 rounds
+        - the score of the first q state should be -10.5 (-10 for the failed
+            goal) and -0.5 for the step penalty
+        - the score of the second q state should be -11.0 (-10 for the failed
+            goal) and (2 * -0.5) for the step penalty.
+                - -0.5 for the initial goal
+                - -0.5 for the newly selected goal
         """
 
         class FakeReaperGameState(ReaperGameState):
@@ -571,4 +571,4 @@ class TestReaperDecider:
         assert q_state_key_round_1 in q_table
         assert q_state_key_round_2 in q_table
         assert q_table[q_state_key_round_1].inner_weigths_dict[ReaperActionTypes.ram_other_close] == -10.5
-        assert q_table[q_state_key_round_2].inner_weigths_dict[ReaperActionTypes.ram_other_close] == -10.5
+        assert q_table[q_state_key_round_2].inner_weigths_dict[ReaperActionTypes.ram_other_close] == -11.0

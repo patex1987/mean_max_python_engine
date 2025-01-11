@@ -253,7 +253,7 @@ def find_target_grid_unit_state(
 
 def get_updated_goal_type(
     reaper_q_state: ReaperQState, current_target: SelectedTargetInformation, current_goal_type: ReaperActionTypes
-) -> ReaperActionTypes:
+) -> ReaperActionTypes | None:
     """
     while you are moving every round a far risky wreck can become a close
     safe wreck. This function returns the updated state, so the q table
@@ -268,6 +268,8 @@ def get_updated_goal_type(
     match current_goal_type:
         case ReaperActionTypes.harvest_safe | ReaperActionTypes.harvest_risky | ReaperActionTypes.harvest_dangerous:
             # TODO: remember `goal_possibility_determiner.safe_water_possible` - only reapers are considered yet
+            if target_id not in reaper_q_state.reaper_water_relation:
+                return None
             updated_reaper_water_category = reaper_q_state.reaper_water_relation[target_id]
             distance, risk = updated_reaper_water_category
             # TODO: we already have another TODO to this differently, especially don't rely on stupid strings
@@ -276,6 +278,8 @@ def get_updated_goal_type(
             return harvest_category
 
         case ReaperActionTypes.ram_reaper_close | ReaperActionTypes.ram_reaper_mid | ReaperActionTypes.ram_reaper_far:
+            if target_id not in reaper_q_state.reaper_id_category_relation:
+                return None
             updated_enemy_other_category = reaper_q_state.reaper_id_category_relation[target_id]
             reaper_distance, water_distance = updated_enemy_other_category
             ram_reaper_category_name = f'ram_reaper_{reaper_distance}'
@@ -283,6 +287,8 @@ def get_updated_goal_type(
             return ram_category
 
         case ReaperActionTypes.ram_other_close | ReaperActionTypes.ram_other_mid | ReaperActionTypes.ram_other_far:
+            if target_id not in reaper_q_state.other_id_category_mapping:
+                return None
             updated_enemy_other_category = reaper_q_state.other_id_category_mapping[target_id]
             other_distance, water_distance = updated_enemy_other_category
             ram_other_category_name = f'ram_other_{other_distance}'
@@ -301,6 +307,8 @@ def get_updated_goal_type(
             | ReaperActionTypes.move_tanker_risky
             | ReaperActionTypes.move_tanker_dangerous
         ):
+            if target_id not in reaper_q_state.tanker_id_enemy_category_relation:
+                return None
             updated_tanker_category = reaper_q_state.tanker_id_enemy_category_relation[target_id]
             distance, risk = updated_tanker_category
             move_tanker_category_name = f'move_tanker_{risk}'
