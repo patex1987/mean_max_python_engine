@@ -52,7 +52,7 @@ def reaper_decider(
     how (i.e. doesn't determine what path, steps to take to get there)
 
     :param reaper_game_state:
-    :param reaper_q_state:
+    :param reaper_q_state: This object can't change during the round
     :param game_grid_information:
     :param player_state:
     :return: ReaperDecisionOutput
