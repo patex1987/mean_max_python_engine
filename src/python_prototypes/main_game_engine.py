@@ -83,7 +83,7 @@ class MainGameEngine:
         original_mission_steps = self.reaper_game_state._mission_steps
 
         # TODO: make reaper_decider oop based and add it as a class field,
-        #   so you can inject a different implementation in your tests
+        #   so you can inject a different implementation in your test
         reaper_decision = reaper_decider(
             reaper_game_state=self.reaper_game_state,
             reaper_q_state=reaper_q_state,
