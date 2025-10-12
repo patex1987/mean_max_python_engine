@@ -159,5 +159,3 @@ class ReaperAndWreckOnlyScenario:
         )
         fake_player_state.score_gained = water_gain
         return fake_player_state
-
-

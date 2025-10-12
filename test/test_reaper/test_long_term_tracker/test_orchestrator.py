@@ -11,6 +11,13 @@ from python_prototypes.reaper.target_selector import SelectedTargetInformation
 class TestLongTermRewardTrackingOrchestrator:
 
     def test_harvest_success_hit_twice(self):
+        """
+        There are 2 steps where the player's team gained score and the reaper is
+        within the same grid coordinate as the water wreck (most probably sucked
+        the water from the same wreck)
+
+        SO there should be gain backpropagation only in those 2 steps.
+        """
         harvest_success_tracker = HarvestSuccessTracker(
             original_water_target=SelectedTargetInformation(
                 id=1,
@@ -37,11 +44,12 @@ class TestLongTermRewardTrackingOrchestrator:
             MissionStep(q_state_key=reaper_q_state.get_state_tuple_key(), goal_type=ReaperActionTypes.harvest_safe)
         ]
 
+        observed_gains_losses = []
         for reaper_position, water_gain in reaper_movement_sequence_water_gain:
             game_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, reaper_position)
             full_grid_state = game_scenario.get_full_grid_state()
             player_state = game_scenario.get_player_state(water_gain)
-            reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
+            # reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
 
             q_state_gains_losses = orchestrator.orchestrate(
                 original_mission_steps=original_mission_steps,
@@ -54,9 +62,11 @@ class TestLongTermRewardTrackingOrchestrator:
                 ),
                 game_grid_information=full_grid_state,
             )
-            print(q_state_gains_losses)
+            observed_gains_losses.append(q_state_gains_losses)
 
-        pass
+        expected_gain_loss_lengths = [0, 1, 0, 1, 0]
+        for idx, observed_gain_loss in enumerate(observed_gains_losses):
+            assert len(observed_gain_loss) == expected_gain_loss_lengths[idx]
 
     def test_no_harvest_success(self):
         pass

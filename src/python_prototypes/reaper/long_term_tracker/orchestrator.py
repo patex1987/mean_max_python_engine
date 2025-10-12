@@ -2,8 +2,12 @@ import copy
 
 from python_prototypes.field_types import PlayerState, GameGridInformation
 from python_prototypes.reaper.long_term_tracker.tracker_units import LongTermTracker
-from python_prototypes.reaper.q_state_types import ReaperQState, MissionStep, ReaperActionsQWeights, \
-    get_default_reaper_actions_q_weights
+from python_prototypes.reaper.q_state_types import (
+    ReaperQState,
+    MissionStep,
+    ReaperActionsQWeights,
+    get_default_reaper_actions_q_weights,
+)
 
 
 class LongTermRewardTrackingOrchestrator:
