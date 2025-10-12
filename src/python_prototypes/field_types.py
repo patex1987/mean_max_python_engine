@@ -108,3 +108,25 @@ class PlayerState:
     doof_state: GridUnitState
     rage: int
     score: int
+    rage_gained: int = 0
+    score_gained: int = 0
+
+    def __init__(
+        self,
+        reaper_state: GridUnitState,
+        destroyer_state: GridUnitState,
+        doof_state: GridUnitState,
+        rage: int,
+        score: int,
+        prev_rage: int | None,
+        prev_score: int | None,
+    ):
+        self.reaper_state = reaper_state
+        self.destroyer_state = destroyer_state
+        self.doof_state = doof_state
+        self.rage = rage
+        self.score = score
+        if prev_rage:
+            self.rage_gained = rage - prev_rage
+        if prev_score:
+            self.score_gained = score - prev_score

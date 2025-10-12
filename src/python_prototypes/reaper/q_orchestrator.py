@@ -10,6 +10,7 @@ import pytest
 from python_prototypes.field_types import GridUnitState, GameGridInformation, EntitiesForReaper
 from python_prototypes.reaper.exception_types import ImpossibleTarget
 from python_prototypes.reaper.goal_possibility_determiner import get_goal_possibility_determiner
+from python_prototypes.reaper.long_term_tracker.orchestrator import LongTermRewardTrackingOrchestrator
 from python_prototypes.reaper.q_state_types import (
     ReaperQState,
     get_default_reaper_actions_q_weights,
@@ -55,6 +56,8 @@ class ReaperGameState:
         self.target_tracker: BaseTracker | None = None
 
         self._planned_game_output_path: list[str] | None = None
+
+        self.long_term_reward_tracking_orchestrator = LongTermRewardTrackingOrchestrator()
 
     @property
     def current_goal_type(self) -> ReaperActionTypes | None:

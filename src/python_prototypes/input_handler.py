@@ -29,11 +29,11 @@ def original_game_main():
     # game loop
     while True:
         my_score = int(input())
-        enemy_score_1 = int(input())
-        enemy_score_2 = int(input())
+        enemy_1_score = int(input())
+        enemy_2_score = int(input())
         my_rage = int(input())
-        enemy_rage_1 = int(input())
-        enemy_rage_2 = int(input())
+        enemy_1_rage = int(input())
+        enemy_2_rage = int(input())
         unit_count = int(input())
 
         full_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
@@ -48,6 +48,7 @@ def original_game_main():
         player_reaper_grid_unit: GridUnitState | None = None
         player_destroyer_grid_unit: GridUnitState | None = None
         player_doof_grid_unit: GridUnitState | None = None
+        enemy_id_to_entities: dict[int, dict[Entity, GridUnitState]] = defaultdict(dict)
 
         for i in range(unit_count):
             inputs = input().split()
@@ -96,11 +97,15 @@ def original_game_main():
             if unit_type == Entity.REAPER.value and player != PlayerFieldTypes.PLAYER.value:
                 enemy_reaper_grid_state[grid_coordinate].append(grid_unit)
                 enemy_reaper_id_to_grid_coord[unit_id] = grid_coordinate
+
+                enemy_id_to_entities[player][Entity.REAPER] = grid_unit
                 continue
 
             if unit_type in [Entity.DESTROYER.value, Entity.DOOF.value] and player != PlayerFieldTypes.PLAYER.value:
                 enemy_others_grid_state[grid_coordinate].append(grid_unit)
                 enemy_others_id_to_grid_coord[unit_id] = grid_coordinate
+
+                enemy_id_to_entities[player][Entity(unit_type)] = grid_unit
                 continue
 
             if unit_type == Entity.REAPER.value and player == PlayerFieldTypes.PLAYER.value:
@@ -129,10 +134,11 @@ def original_game_main():
             tanker_id_to_grid_coord,
             wreck_grid_state,
             wreck_id_to_grid_coord,
-            enemy_score_1,
-            enemy_score_2,
-            enemy_rage_1,
-            enemy_rage_2,
+            enemy_id_to_entities,
+            enemy_1_score,
+            enemy_2_score,
+            enemy_1_rage,
+            enemy_2_rage,
         )
 
         print("WAIT")

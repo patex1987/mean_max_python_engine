@@ -43,6 +43,8 @@ class TestReaperDecider:
             doof_state=GridUnitState(grid_coordinate=(0, 0), unit=Unit(0, 0, 10, 0, 300, Entity.DOOF.value)),
             rage=0,
             score=0,
+            prev_rage=None,
+            prev_score=None,
         )
         reaper_game_state = ReaperGameState()
         reaper_game_state.exploration_rate = 0.0

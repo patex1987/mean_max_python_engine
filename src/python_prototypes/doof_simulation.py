@@ -5,7 +5,7 @@ import random
 
 from python_prototypes.field_tools import get_euclidean_distance
 from python_prototypes.field_types import GridUnitState
-from python_prototypes.throttle_optimization import genetic_algorithm
+from python_prototypes.throttle_optimization import find_optimal_throttle_sequence
 
 
 class DoofDecisionResults(Enum):
@@ -54,7 +54,7 @@ def get_next_doof_state(
             target_distance = get_euclidean_distance(
                 (current_doof_state.x, current_doof_state.y), (target_object.unit.x, target_object.unit.y)
             )
-            throttles_to_target = genetic_algorithm()
+            throttles_to_target = find_optimal_throttle_sequence()
             next_throttle = throttles_to_target[0]
         case DoofDecisionResults.SKILL:
             current_doof_state = DoofDecisionResults.SKILL

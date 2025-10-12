@@ -5,7 +5,13 @@ from typing import Optional
 
 from python_prototypes.field_tools import get_grid_position, get_manhattan_distance, get_euclidean_distance
 from python_prototypes.field_types import Entity, GridUnitState, GRID_COORD_UNIT_STATE_T
-from python_prototypes.throttle_optimization import genetic_algorithm, FITNESS_SCORE_TYPE
+from python_prototypes.throttle_optimization import (
+    find_optimal_throttle_sequence,
+    FITNESS_SCORE_TYPE,
+    ThrottleCalculationInput,
+    ThrottleSequenceGeneticResult,
+    GeneticConfiguration,
+)
 
 
 def get_next_destroyer_state(
@@ -77,49 +83,60 @@ def get_next_destroyer_state(
 
 def get_throttle_sequence_for_next_step(
     current_destroyer_state, next_step, target_distance, v0
-) -> Optional[tuple[Optional[list[int]], Optional[FITNESS_SCORE_TYPE]]]:
+) -> Optional[ThrottleSequenceGeneticResult]:
     if next_step == DestroyerDecisionResult.FASTEST_PATH:
         # this is counting with a straight line to the goal
-        # TODO: move the genetic algorithm configs to a dedicated class
-        throttle_sequence = genetic_algorithm(
-            v0,
-            current_destroyer_state.mass,
-            current_destroyer_state.friction,
-            target_distance,
-            v_threshold=5,
-            max_t=50,
+        throttle_sequence_input = ThrottleCalculationInput(
+            v0=v0,
+            mass=current_destroyer_state.mass,
+            friction=current_destroyer_state.friction,
+            d_target=target_distance,
+        )
+        fast_path_genetic_configuration = GeneticConfiguration(
+            speed_threshold=5,
+            max_sequence_length=50,
             throttle_range=(0, 300),
-            pop_size=1000,
+            population_size=1000,
             num_generations=100,
             mutation_rate=0.1,
             num_best_parents=20,
             num_worst_parents=10,
-            distance_weigth=1,
+            distance_weight=1,
             speed_weight=0.001,
             length_weight=0.001,
             nonzero_weight=0.001,
             timeout_ms=300,
         )
+        throttle_sequence = find_optimal_throttle_sequence(
+            throttle_calculation_input=throttle_sequence_input,
+            genetic_configration=fast_path_genetic_configuration,
+        )
         return throttle_sequence
     if next_step == DestroyerDecisionResult.BEST_PATH:
-        throttle_sequence = genetic_algorithm(
-            v0,
-            current_destroyer_state.mass,
-            current_destroyer_state.friction,
-            target_distance,
-            v_threshold=3,
-            max_t=50,
+        throttle_sequence_input = ThrottleCalculationInput(
+            v0=v0,
+            mass=current_destroyer_state.mass,
+            friction=current_destroyer_state.friction,
+            d_target=target_distance,
+        )
+        best_path_genetic_configuration = GeneticConfiguration(
+            speed_threshold=3,
+            max_sequence_length=50,
             throttle_range=(0, 300),
-            pop_size=100,
+            population_size=100,
             num_generations=100,
             mutation_rate=0.1,
             num_best_parents=20,
             num_worst_parents=10,
-            distance_weigth=0.5,
+            distance_weight=0.5,
             speed_weight=0.6,
             length_weight=0.3,
             nonzero_weight=0.3,
             timeout_ms=300,
+        )
+        throttle_sequence = find_optimal_throttle_sequence(
+            throttle_calculation_input=throttle_sequence_input,
+            genetic_configration=best_path_genetic_configuration,
         )
         return throttle_sequence
     return None
@@ -154,16 +171,18 @@ def find_tanker_target(
     return target_tanker_grid_position
 
 
-def get_next_move_string(next_step: 'DestroyerDecisionResult', target_object: GridUnitState, throttle_sequence) -> str:
+def get_next_move_string(
+    next_step: 'DestroyerDecisionResult', target_object: GridUnitState, throttle_sequence: ThrottleSequenceGeneticResult
+) -> str:
     match next_step:
         case DestroyerDecisionResult.FASTEST_PATH:
             move_string = '{} {} {} Destroyer'.format(
-                target_object.unit.x, target_object.unit.y, throttle_sequence[0][0]
+                target_object.unit.x, target_object.unit.y, throttle_sequence.sequence[0]
             )
             return move_string
         case DestroyerDecisionResult.BEST_PATH:
             move_string = '{} {} {} Destroyer'.format(
-                target_object.unit.x, target_object.unit.y, throttle_sequence[0][0]
+                target_object.unit.x, target_object.unit.y, throttle_sequence.sequence[0]
             )
             return move_string
         case DestroyerDecisionResult.SKILL:

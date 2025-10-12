@@ -82,6 +82,10 @@ def get_euclidean_distance(coordinate_a: tuple[int, int], coordinate_b: tuple[in
     return math.sqrt((coordinate_a[0] - coordinate_b[0]) ** 2 + (coordinate_a[1] - coordinate_b[1]) ** 2)
 
 
+def calculate_speed_from_vectors(vx: float, vy: float) -> float:
+    return math.sqrt(vx**2 + vy**2)
+
+
 # grid_state: dict[tuple[int, int], list[Entity]] = {}
 # tanker_grid_positions: list[GridUnitState]
 

@@ -5,6 +5,7 @@ TODO: these can be later moved to some sort of test suite (most probably conftes
 from collections import defaultdict
 from typing import Any
 
+from python_prototypes.destroyer_simulation import Coordinate
 from python_prototypes.field_tools import get_grid_position
 from python_prototypes.field_types import (
     Unit,
@@ -17,87 +18,69 @@ from python_prototypes.field_types import (
 )
 
 
-class ExampleBasicScenarioIncomplete:
-    enemy_1_destroyer = Unit(
-        unit_type=Entity.DESTROYER.value,
-        x=200,
-        y=200,
-        vx=0,
-        vy=0,
-        radius=30,
-        unit_id=1,
-        mass=10,
-        player=PlayerFieldTypes.ENEMY_1.value,
-    )
-    enemy_2_destroyer = Unit(
-        unit_type=Entity.DESTROYER.value,
-        x=2600,
-        y=200,
-        vx=0,
-        vy=0,
-        radius=30,
-        unit_id=2,
-        mass=10,
-        player=PlayerFieldTypes.ENEMY_2.value,
-    )
-    tanker_1 = Unit(
-        unit_type=Entity.TANKER.value,
-        x=2800,
-        y=400,
-        vx=-0.98994,
-        vy=-0.141421,
-        radius=30,
-        unit_id=3,
-        player=PlayerFieldTypes.ENEMY_1.value,
-        mass=20,
-    )
-    tanker_2 = Unit(
-        unit_type=Entity.TANKER.value,
-        x=2800,
-        y=2600,
-        vx=-0.707,
-        vy=-0.707,
-        radius=30,
-        unit_id=4,
-        player=PlayerFieldTypes.ENEMY_2.value,
-        mass=20,
-    )
-    player_doof = Unit(
-        unit_type=Entity.DOOF.value,
-        x=3800,
-        y=2600,
-        vx=0,
-        vy=0,
-        radius=30,
-        unit_id=5,
-        player=PlayerFieldTypes.PLAYER.value,
-        mass=10,
-    )
-    player_destroyer = Unit(
-        unit_type=Entity.DESTROYER.value,
-        x=2800,
-        y=3800,
-        vx=0,
-        vy=0,
-        radius=30,
-        unit_id=6,
-        player=PlayerFieldTypes.PLAYER.value,
-        mass=20,
-    )
-    player_reaper = Unit(
-        unit_type=Entity.REAPER.value,
-        x=3800,
-        y=3800,
-        vx=0,
-        vy=0,
-        radius=30,
-        unit_id=7,
-        player=PlayerFieldTypes.PLAYER.value,
-        mass=30,
-    )
+class ReaperAndWreckOnlyScenario:
+    """
+    There is only a player's reaper and a wreck, useful
+    to test the long term gains from harvest success tracker
+    """
+
+    def __init__(self, wreck: Unit | None, player_reaper: Unit | None):
+        if not wreck:
+            wreck = Unit(
+                unit_type=Entity.WRECK.value,
+                x=1400,
+                y=1400,
+                vx=0,
+                vy=0,
+                radius=30,
+                unit_id=1,
+                mass=10,
+                player=None,
+            )
+        if not player_reaper:
+            player_reaper = Unit(
+                unit_type=Entity.REAPER.value,
+                x=500,
+                y=1400,
+                vx=0,
+                vy=0,
+                radius=30,
+                unit_id=7,
+                player=PlayerFieldTypes.PLAYER.value,
+                mass=30,
+            )
+        self.wreck = wreck
+        self.player_reaper = player_reaper
 
     @classmethod
-    def get_example_full_grid_state(cls) -> GameGridInformation:
+    def create_with_coordinates(
+        cls, wreck_coordinate: Coordinate, reaper_coordinate: Coordinate
+    ) -> 'ReaperAndWreckOnlyScenario':
+        wreck = Unit(
+            unit_type=Entity.WRECK.value,
+            x=wreck_coordinate.x,
+            y=wreck_coordinate.y,
+            vx=0,
+            vy=0,
+            radius=30,
+            unit_id=1,
+            mass=10,
+            player=None,
+        )
+        player_reaper = Unit(
+            unit_type=Entity.REAPER.value,
+            x=reaper_coordinate.x,
+            y=reaper_coordinate.y,
+            vx=0,
+            vy=0,
+            radius=30,
+            unit_id=7,
+            player=PlayerFieldTypes.PLAYER.value,
+            mass=30,
+        )
+        return cls(wreck=wreck, player_reaper=player_reaper)
+
+    def get_full_grid_state(self) -> GameGridInformation:
 
         full_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
 
@@ -111,13 +94,8 @@ class ExampleBasicScenarioIncomplete:
         enemy_others_id_to_grid_coord: dict[Any, tuple[int, int]] = {}
 
         for unit in (
-            cls.enemy_1_destroyer,
-            cls.enemy_2_destroyer,
-            cls.tanker_1,
-            cls.tanker_2,
-            cls.player_doof,
-            cls.player_destroyer,
-            cls.player_reaper,
+            self.wreck,
+            self.player_reaper,
         ):
             grid_coordinate = get_grid_position(coordinate=(unit.x, unit.y))
             grid_unit = GridUnitState(grid_coordinate, unit)
@@ -161,27 +139,25 @@ class ExampleBasicScenarioIncomplete:
 
         return game_grid_information
 
-    @classmethod
-    def get_example_player_state(cls) -> PlayerState:
+    def get_player_state(self, water_gain: int | None = None) -> PlayerState:
 
-        player_reaper_unit = cls.player_reaper
+        player_reaper_unit = self.player_reaper
         player_reaper_position = get_grid_position(coordinate=(player_reaper_unit.x, player_reaper_unit.y))
         reaper_grid_unit = GridUnitState(player_reaper_position, player_reaper_unit)
 
-        player_destroyer_unit = cls.player_destroyer
-        player_destroyer_position = get_grid_position(coordinate=(player_destroyer_unit.x, player_destroyer_unit.y))
-        destroyer_grid_unit = GridUnitState(player_destroyer_position, player_destroyer_unit)
+        fake_destroyer_state = GridUnitState((0, 0), Unit(0, 0, 0, 0, 0, 0, 0, PlayerFieldTypes.PLAYER.value))
+        fake_doof_state = GridUnitState((0, 0), Unit(0, 0, 0, 0, 0, 0, 0, PlayerFieldTypes.PLAYER.value))
 
-        player_doof_unit = cls.player_doof
-        player_doof_position = get_grid_position(coordinate=(player_doof_unit.x, player_doof_unit.y))
-        doof_grid_unit = GridUnitState(player_doof_position, player_doof_unit)
-
-        return PlayerState(
+        fake_player_state = PlayerState(
             reaper_state=reaper_grid_unit,
-            destroyer_state=destroyer_grid_unit,
-            doof_state=doof_grid_unit,
+            destroyer_state=fake_destroyer_state,
+            doof_state=fake_doof_state,
             rage=0,
             score=0,
             prev_rage=None,
             prev_score=None,
         )
+        fake_player_state.score_gained = water_gain
+        return fake_player_state
+
+

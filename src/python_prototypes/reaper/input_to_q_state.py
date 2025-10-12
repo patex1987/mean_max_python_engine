@@ -268,7 +268,7 @@ def get_water_enemy_relations(
     water_category_enemy_relation = get_default_water_relations()
     player_reaper_coordinate = player_state.reaper_state.grid_coordinate
     enemy_water_category_relation = {}
-    for wreck_id, wreck_coordinate in wreck_id_to_grid_coord:
+    for wreck_id, wreck_coordinate in wreck_id_to_grid_coord.items():
 
         manhattan_distance = get_manhattan_distance(
             coordinate_a=player_reaper_coordinate, coordinate_b=wreck_coordinate
