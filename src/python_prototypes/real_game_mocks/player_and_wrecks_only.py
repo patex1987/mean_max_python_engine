@@ -140,6 +140,15 @@ class ReaperAndWreckOnlyScenario:
         return game_grid_information
 
     def get_player_state(self, water_gain: int | None = None) -> PlayerState:
+        """
+        Gets the player state and fakes its water gain to the provided level.
+
+        Used to emulate a game round's player state, where the water gain is
+        at the desired level
+
+        :param water_gain:
+        :return:
+        """
 
         player_reaper_unit = self.player_reaper
         player_reaper_position = get_grid_position(coordinate=(player_reaper_unit.x, player_reaper_unit.y))
