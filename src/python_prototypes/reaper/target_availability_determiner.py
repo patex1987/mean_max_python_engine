@@ -1,8 +1,12 @@
 from enum import Enum
 from functools import partial
-from typing import Callable, Any
+from typing import Callable
 
-from python_prototypes.field_types import GridUnitState, GRID_COORD_UNIT_STATE_T, GameGridInformation, Entity
+from python_prototypes.field_types import (
+    GridUnitState,
+    GameGridInformation,
+    Entity,
+)
 from python_prototypes.reaper.q_state_types import ReaperActionTypes
 from python_prototypes.reaper.target_tracker_determiner import BaseTracker
 
@@ -59,11 +63,13 @@ def get_goal_target_determiner(
         case ReaperActionTypes.move_tanker_dangerous:
             return tanker_target_available
         case _:
-            raise ValueError(f'Invalid goal type: {current_goal_type}')
+            raise ValueError(f"Invalid goal type: {current_goal_type}")
 
 
 def water_target_available(
-    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None,
+    game_grid_information: GameGridInformation,
+    target_tracker: BaseTracker,
 ) -> TargetAvailabilityState:
     """
     :param goal_target_obj:
@@ -103,7 +109,9 @@ def water_target_available(
 
 
 def ram_target_obj_available(
-    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None,
+    game_grid_information: GameGridInformation,
+    target_tracker: BaseTracker,
 ) -> TargetAvailabilityState:
     """
 
@@ -161,7 +169,9 @@ def ram_target_obj_available(
 
 
 def super_power_target_available(
-    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None,
+    game_grid_information: GameGridInformation,
+    target_tracker: BaseTracker,
 ) -> TargetAvailabilityState:
     if goal_target_obj is None:
         return TargetAvailabilityState.invalid
@@ -185,7 +195,9 @@ def super_power_target_available(
 
 
 def tanker_target_available(
-    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None,
+    game_grid_information: GameGridInformation,
+    target_tracker: BaseTracker,
 ) -> TargetAvailabilityState:
     """
     :param goal_target_obj:
@@ -226,7 +238,9 @@ def tanker_target_available(
 
 
 def no_op_target_available(
-    goal_target_obj: GridUnitState | None, game_grid_information: GameGridInformation, target_tracker: BaseTracker
+    goal_target_obj: GridUnitState | None,
+    game_grid_information: GameGridInformation,
+    target_tracker: BaseTracker,
 ) -> TargetAvailabilityState:
     """
 

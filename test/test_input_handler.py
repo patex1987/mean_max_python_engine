@@ -1,8 +1,9 @@
-from python_prototypes.real_game_mocks.full_grid_state import ExampleBasicScenarioIncomplete
+from python_prototypes.real_game_mocks.full_grid_state import (
+    ExampleBasicScenarioIncomplete,
+)
 
 
 class TestGameInputHandler:
-
     def test_get_example_full_grid_state(self):
         game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
         full_grid_state = game_grid_information.full_grid_state

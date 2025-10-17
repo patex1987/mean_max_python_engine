@@ -1,7 +1,7 @@
 def path_printer(s=500, m=0.5, v0=0, f=0.2, max_time=10):
     for t in range(1, max_time + 1):
         res = ((s * m) / ((t**2) * (1 - f))) - (v0 * m / t)
-        print(f'round: {t}, throttle: {res}')
+        print(f"round: {t}, throttle: {res}")
         if res < 300:
             break
 
@@ -23,7 +23,7 @@ def path_printer_max_default(s=500, mass=0.5, v0=0, f=0.2, max_time=10):
             res = 300
         v += res
         s_left = s_left - v
-        print(f'round: {t}, speed: {v} throttle: {res}, distance left: {s_left}')
+        print(f"round: {t}, speed: {v} throttle: {res}, distance left: {s_left}")
         if s_left <= 0:
             break
 
@@ -39,9 +39,9 @@ def path_printer_max_default(s=500, mass=0.5, v0=0, f=0.2, max_time=10):
 
     s_left = s
     v = v0
-    print(f'BEFORE speed: {v} throttle: 0, distance left: {s_left}')
+    print(f"BEFORE speed: {v} throttle: 0, distance left: {s_left}")
     for t in range(1, max_time + 1):
-        res = ((s_left * mass) / ((1 - f))) - (v * mass)
+        res = ((s_left * mass) / (1 - f)) - (v * mass)
         if res >= 300:
             res = 300
         v = (v + (res / mass)) * (1 - f)
@@ -49,6 +49,6 @@ def path_printer_max_default(s=500, mass=0.5, v0=0, f=0.2, max_time=10):
         if res <= 0:
             res = 0
 
-        print(f'round: {t}, speed: {v} throttle: {res}, distance left: {s_left}')
+        print(f"round: {t}, speed: {v} throttle: {res}, distance left: {s_left}")
         if s_left <= 0:
             break

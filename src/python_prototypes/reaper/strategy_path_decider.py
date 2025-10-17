@@ -1,19 +1,28 @@
-from python_prototypes.field_tools import calculate_speed_from_vectors, get_euclidean_distance
+from python_prototypes.field_tools import (
+    calculate_speed_from_vectors,
+    get_euclidean_distance,
+)
 from python_prototypes.reaper.decision_maker import ReaperDecisionType
 from python_prototypes.reaper.long_term_tracker.determiner import (
     get_success_long_term_tracker,
     get_failure_long_term_tracker,
 )
 from python_prototypes.reaper.path_planner import StrategyPath, get_reaper_planner
+from python_prototypes.reaper.target_selector import SelectedTargetInformation
 from python_prototypes.throttle_optimization import ThrottleCalculationInput
 from python_prototypes.unit_parameters import UnitFriction
 
 
 class DefaultReaperSrategyPathDecider:
-
     @classmethod
     def reaper_get_strategy_path(
-        cls, original_mission_steps, original_target, latest_goal_type, player_state, reaper_decision, reaper_game_state
+        cls,
+        original_mission_steps,
+        original_target: SelectedTargetInformation,
+        latest_goal_type,
+        player_state,
+        reaper_decision,
+        reaper_game_state,
     ) -> StrategyPath:
         """
         Get the strategy path (throttles) to reach the target
@@ -38,8 +47,14 @@ class DefaultReaperSrategyPathDecider:
                     vy=player_state.reaper_state.unit.vy,
                 )
                 distance_to_target = get_euclidean_distance(
-                    coordinate_a=(player_state.reaper_state.unit.x, player_state.reaper_state.unit.y),
-                    coordinate_b=(reaper_decision.target_grid_unit.unit.x, reaper_decision.target_grid_unit.unit.y),
+                    coordinate_a=(
+                        player_state.reaper_state.unit.x,
+                        player_state.reaper_state.unit.y,
+                    ),
+                    coordinate_b=(
+                        reaper_decision.target_grid_unit.unit.x,
+                        reaper_decision.target_grid_unit.unit.y,
+                    ),
                 )
                 reaper_throttle_calculation_input = ThrottleCalculationInput(
                     v0=v0,
@@ -71,8 +86,14 @@ class DefaultReaperSrategyPathDecider:
                     vy=player_state.reaper_state.unit.vy,
                 )
                 distance_to_target = get_euclidean_distance(
-                    coordinate_a=(player_state.reaper_state.unit.x, player_state.reaper_state.unit.y),
-                    coordinate_b=(reaper_decision.target_grid_unit.unit.x, reaper_decision.target_grid_unit.unit.y),
+                    coordinate_a=(
+                        player_state.reaper_state.unit.x,
+                        player_state.reaper_state.unit.y,
+                    ),
+                    coordinate_b=(
+                        reaper_decision.target_grid_unit.unit.x,
+                        reaper_decision.target_grid_unit.unit.y,
+                    ),
                 )
                 reaper_throttle_calculation_input = ThrottleCalculationInput(
                     v0=v0,

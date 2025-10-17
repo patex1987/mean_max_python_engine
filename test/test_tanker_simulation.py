@@ -7,7 +7,6 @@ from python_prototypes.tanker_simulation import (
 
 
 class TestTanker:
-
     def test_main_runner(self):
         """
         Just emulates the movement of the tanker. Moving to the center of
@@ -30,7 +29,7 @@ class TestTanker:
             inside_playfield = is_inside_playfield(tanker_state.x, tanker_state.y)
             if not inside_playfield:
                 print(
-                    f'tanker exited the field, it ceased to exist, last state: {tanker_state!r}, grid position: {get_grid_position((tanker_state.x, tanker_state.y))}'
+                    f"tanker exited the field, it ceased to exist, last state: {tanker_state!r}, grid position: {get_grid_position((tanker_state.x, tanker_state.y))}"
                 )
                 break
-            print(f'[Round {i}] {tanker_state!r}, grid position: {get_grid_position((tanker_state.x, tanker_state.y))}')
+            print(f"[Round {i}] {tanker_state!r}, grid position: {get_grid_position((tanker_state.x, tanker_state.y))}")

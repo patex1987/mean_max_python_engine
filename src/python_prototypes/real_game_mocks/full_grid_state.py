@@ -98,7 +98,6 @@ class ExampleBasicScenarioIncomplete:
 
     @classmethod
     def get_example_full_grid_state(cls) -> GameGridInformation:
-
         full_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
 
         wreck_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
@@ -163,7 +162,6 @@ class ExampleBasicScenarioIncomplete:
 
     @classmethod
     def get_example_player_state(cls) -> PlayerState:
-
         player_reaper_unit = cls.player_reaper
         player_reaper_position = get_grid_position(coordinate=(player_reaper_unit.x, player_reaper_unit.y))
         reaper_grid_unit = GridUnitState(player_reaper_position, player_reaper_unit)

@@ -1,11 +1,22 @@
 import copy
 import math
 
-from python_prototypes.field_types import PlayerState, GridUnitState, Unit, Entity, EntitiesForReaper
-from python_prototypes.real_game_mocks.full_grid_state import ExampleBasicScenarioIncomplete
+from python_prototypes.field_types import (
+    PlayerState,
+    GridUnitState,
+    Unit,
+    Entity,
+    EntitiesForReaper,
+)
+from python_prototypes.real_game_mocks.full_grid_state import (
+    ExampleBasicScenarioIncomplete,
+)
 from python_prototypes.reaper.decision_maker import reaper_decider, ReaperDecisionType
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
-from python_prototypes.reaper.q_orchestrator import ReaperGameState, find_target_grid_unit_state
+from python_prototypes.reaper.q_orchestrator import (
+    ReaperGameState,
+    find_target_grid_unit_state,
+)
 from python_prototypes.reaper.q_state_types import (
     ReaperQState,
     get_default_water_relations,
@@ -39,7 +50,10 @@ class TestReaperDecider:
         game_grid_information = ExampleBasicScenarioIncomplete.get_example_full_grid_state()
         player_state = PlayerState(
             reaper_state=GridUnitState(grid_coordinate=(0, 0), unit=Unit(0, 0, 10, 0, 300, Entity.REAPER.value)),
-            destroyer_state=GridUnitState(grid_coordinate=(0, 0), unit=Unit(0, 0, 10, 0, 300, Entity.DESTROYER.value)),
+            destroyer_state=GridUnitState(
+                grid_coordinate=(0, 0),
+                unit=Unit(0, 0, 10, 0, 300, Entity.DESTROYER.value),
+            ),
             doof_state=GridUnitState(grid_coordinate=(0, 0), unit=Unit(0, 0, 10, 0, 300, Entity.DOOF.value)),
             rage=0,
             score=0,
@@ -192,7 +206,10 @@ class TestReaperDecider:
         )
 
         enemy_position = target_unit.unit.x, target_unit.unit.y
-        player_position = player_state.reaper_state.unit.x, player_state.reaper_state.unit.y
+        player_position = (
+            player_state.reaper_state.unit.x,
+            player_state.reaper_state.unit.y,
+        )
         dx = enemy_position[0] - player_position[0]
         dy = enemy_position[1] - player_position[1]
         magnitude = math.sqrt(dx**2 + dy**2)

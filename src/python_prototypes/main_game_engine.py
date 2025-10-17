@@ -1,6 +1,5 @@
 from typing import Type
 
-from python_prototypes.field_tools import calculate_speed_from_vectors, get_euclidean_distance
 from python_prototypes.field_types import (
     GameGridInformation,
     PlayerState,
@@ -9,21 +8,15 @@ from python_prototypes.field_types import (
     Entity,
     PlayerFieldTypes,
 )
-from python_prototypes.reaper.decision_maker import reaper_decider, ReaperDecisionType
+from python_prototypes.reaper.decision_maker import reaper_decider
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
-from python_prototypes.reaper.long_term_tracker.determiner import (
-    get_success_long_term_tracker,
-    get_failure_long_term_tracker,
-)
-from python_prototypes.reaper.path_planner import get_reaper_planner, StrategyPath
 from python_prototypes.reaper.q_orchestrator import ReaperGameState
-from python_prototypes.reaper.strategy_path_decider import DefaultReaperSrategyPathDecider
-from python_prototypes.throttle_optimization import ThrottleCalculationInput
-from python_prototypes.unit_parameters import UnitFriction
+from python_prototypes.reaper.strategy_path_decider import (
+    DefaultReaperSrategyPathDecider,
+)
 
 
 class MainGameEngine:
-
     def __init__(
         self,
         reaper_game_state: ReaperGameState,

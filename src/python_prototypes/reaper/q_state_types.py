@@ -66,7 +66,7 @@ class ReaperQState:
     def __hash__(self):
         return hash(self.get_state_tuple_key())
 
-    def __eq__(self, other: 'ReaperQState'):
+    def __eq__(self, other: "ReaperQState"):
         return self.get_state_tuple_key() == other.get_state_tuple_key()
 
     def __repr__(self):
@@ -88,7 +88,7 @@ class ReaperQState:
         non_null_player_reaper_relation = {key: val for key, val in self.player_reaper_relation.items() if val}
         non_null_player_other_relation = {key: val for key, val in self.player_other_relation.items() if val}
 
-        return 'ReaperQState(water_reaper_relation={0}, water_other_relation={1}, tanker_enemy_relation={2}, player_reaper_relation={3}, player_other_relation={4}, super_power_available={5})'.format(
+        return "ReaperQState(water_reaper_relation={0}, water_other_relation={1}, tanker_enemy_relation={2}, player_reaper_relation={3}, player_other_relation={4}, super_power_available={5})".format(
             non_null_water_reaper_relation,
             non_null_water_other_relation,
             non_null_tanker_enemy_relation,
@@ -99,10 +99,9 @@ class ReaperQState:
 
 
 class ReaperActionsQWeights:
-
     def __init__(
         self,
-        inner_weigths_dict: dict['ReaperActionTypes', float],
+        inner_weigths_dict: dict["ReaperActionTypes", float],
     ):
         self.inner_weigths_dict = inner_weigths_dict
 
@@ -114,20 +113,20 @@ class ReaperActionsQWeights:
         return sorted_weights
 
     def __repr__(self):
-        return 'ReaperActionsQWeights({0})'.format(self.inner_weigths_dict)
+        return "ReaperActionsQWeights({0})".format(self.inner_weigths_dict)
 
 
 def get_default_water_relations() -> dict[tuple[str, str], list[Any]]:
     water_reaper_relation = {
-        ('close', 'safe'): [],
-        ('close', 'risky'): [],
-        ('close', 'dangerous'): [],
-        ('medium', 'safe'): [],
-        ('medium', 'risky'): [],
-        ('medium', 'dangerous'): [],
-        ('far', 'safe'): [],
-        ('far', 'risky'): [],
-        ('far', 'dangerous'): [],
+        ("close", "safe"): [],
+        ("close", "risky"): [],
+        ("close", "dangerous"): [],
+        ("medium", "safe"): [],
+        ("medium", "risky"): [],
+        ("medium", "dangerous"): [],
+        ("far", "safe"): [],
+        ("far", "risky"): [],
+        ("far", "dangerous"): [],
     }
     return water_reaper_relation
 
@@ -140,15 +139,15 @@ def get_default_tanker_enemies_relation() -> dict[tuple[str, str], list[Any]]:
     :return:
     """
     tanker_enemies_relation = {
-        ('close', 'safe'): [],
-        ('close', 'risky'): [],
-        ('close', 'dangerous'): [],
-        ('medium', 'safe'): [],
-        ('medium', 'risky'): [],
-        ('medium', 'dangerous'): [],
-        ('far', 'safe'): [],
-        ('far', 'risky'): [],
-        ('far', 'dangerous'): [],
+        ("close", "safe"): [],
+        ("close", "risky"): [],
+        ("close", "dangerous"): [],
+        ("medium", "safe"): [],
+        ("medium", "risky"): [],
+        ("medium", "dangerous"): [],
+        ("far", "safe"): [],
+        ("far", "risky"): [],
+        ("far", "dangerous"): [],
     }
     return tanker_enemies_relation
 
@@ -161,12 +160,12 @@ def get_default_enemies_relation() -> dict[tuple[str, str], list[Any]]:
     :return:
     """
     enemies_relation = {
-        ('close', 'close'): [],
-        ('close', 'medium'): [],
-        ('medium', 'close'): [],
-        ('medium', 'medium'): [],
-        ('far', 'close'): [],
-        ('far', 'medium'): [],
+        ("close", "close"): [],
+        ("close", "medium"): [],
+        ("medium", "close"): [],
+        ("medium", "medium"): [],
+        ("far", "close"): [],
+        ("far", "medium"): [],
     }
     return enemies_relation
 
@@ -218,7 +217,9 @@ def convert_relation_to_tuple_key(relation: dict[tuple[str, str], list[Any]]) ->
     return tuple_key
 
 
-def convert_to_state_dict(relation: dict[tuple[str, str], list[Any]]) -> dict[tuple[str, str], int]:
+def convert_to_state_dict(
+    relation: dict[tuple[str, str], list[Any]],
+) -> dict[tuple[str, str], int]:
     state_dict = {state_key: 1 if len(coordinates) > 0 else 0 for state_key, coordinates in relation.items()}
     return state_dict
 

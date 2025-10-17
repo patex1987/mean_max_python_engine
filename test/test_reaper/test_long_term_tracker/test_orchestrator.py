@@ -1,9 +1,15 @@
 from python_prototypes.destroyer_simulation import Coordinate
 from python_prototypes.field_types import EntitiesForReaper, PlayerState
-from python_prototypes.real_game_mocks.player_and_wrecks_only import ReaperAndWreckOnlyScenario
+from python_prototypes.real_game_mocks.player_and_wrecks_only import (
+    ReaperAndWreckOnlyScenario,
+)
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
-from python_prototypes.reaper.long_term_tracker.orchestrator import LongTermRewardTrackingOrchestrator
-from python_prototypes.reaper.long_term_tracker.tracker_units import HarvestSuccessTracker
+from python_prototypes.reaper.long_term_tracker.orchestrator import (
+    LongTermRewardTrackingOrchestrator,
+)
+from python_prototypes.reaper.long_term_tracker.tracker_units import (
+    HarvestSuccessTracker,
+)
 from python_prototypes.reaper.q_state_types import MissionStep, ReaperActionTypes
 from python_prototypes.reaper.target_selector import SelectedTargetInformation
 
@@ -34,10 +40,22 @@ def execute_rounds(orchestrator, reaper_movement_sequence_water_gain, wreck_coor
             original_mission_steps=original_mission_steps,
             player_state=player_state,
             enemy_1_state=PlayerState(
-                reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
+                reaper_state=None,
+                destroyer_state=None,
+                doof_state=None,
+                rage=0,
+                score=0,
+                prev_rage=0,
+                prev_score=0,
             ),
             enemy_2_state=PlayerState(
-                reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
+                reaper_state=None,
+                destroyer_state=None,
+                doof_state=None,
+                rage=0,
+                score=0,
+                prev_rage=0,
+                prev_score=0,
             ),
             game_grid_information=full_grid_state,
         )
@@ -46,7 +64,6 @@ def execute_rounds(orchestrator, reaper_movement_sequence_water_gain, wreck_coor
 
 
 class TestLongTermRewardTrackingOrchestrator:
-
     def test_harvest_success_hit_twice(self):
         """
         There are 2 steps where the player's team gained score and the reaper is

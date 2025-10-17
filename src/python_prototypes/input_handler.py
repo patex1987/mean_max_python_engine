@@ -21,7 +21,6 @@ from python_prototypes.reaper.q_orchestrator import ReaperGameState
 
 
 def original_game_main():
-
     # q_state_action_weights: dict[tuple, dict[str, float]] = {}
     reaper_game_state = ReaperGameState()
     main_game_engine = MainGameEngine(reaper_game_state)

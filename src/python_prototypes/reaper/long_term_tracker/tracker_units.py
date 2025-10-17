@@ -7,7 +7,6 @@ from python_prototypes.reaper.target_selector import SelectedTargetInformation
 
 
 class LongTermTracker(Protocol):
-
     def is_expired(self) -> bool: ...
 
     def get_round_gain_loss(
@@ -24,11 +23,17 @@ class LongTermTracker(Protocol):
 class LongTermSuccessGains:
     harvest = 10
     harvest_decay = 0.9
-    ram = 3
+    ram = 5
     move = 1
 
 
 class HarvestSuccessTracker(LongTermTracker):
+    """
+    Get a decayed reward every time the player's score increased (water sucked)
+    from the originally targeted water wreck
+
+    Tracked for 5 rounds
+    """
 
     def __init__(self, original_water_target: SelectedTargetInformation):
         self.max_rounds = 5
@@ -44,7 +49,7 @@ class HarvestSuccessTracker(LongTermTracker):
         enemy_1_state: PlayerState,
         enemy_2_state: PlayerState,
         game_grid_information: GameGridInformation,
-    ):
+    ) -> float | None:
         self.tracked_rounds += 1
         if not player_state.score_gained:
             return None
@@ -70,3 +75,42 @@ class HarvestSuccessTracker(LongTermTracker):
 
     def _calculate_gain_loss(self) -> float:
         return self.gain * (self.decay_factor**self.tracked_rounds)
+
+
+class RamReaperSuccessTracker(LongTermTracker):
+    """
+    If the rammed enemy reaper (the target) is not able to suck water (i.e.
+    gain water score) for max_rounds (5), then it gets rewarded for the full
+    amount of points. Otherwise, it gets decayed
+
+    """
+
+    def __init__(self, original_reaper_target: SelectedTargetInformation):
+        self.max_rounds = 5
+        self.tracked_rounds = 0
+        self.original_reaper_target = original_reaper_target
+        self.gain = LongTermSuccessGains.ram
+        self.tracker_id = uuid.uuid4()
+        self._expired = False
+
+    def get_round_gain_loss(
+        self,
+        player_state: PlayerState,
+        enemy_1_state: PlayerState,
+        enemy_2_state: PlayerState,
+        game_grid_information: GameGridInformation,
+    ) -> float | None:
+        self.tracked_rounds += 1
+        self.original_reaper_target.id
+        return self._calculate_gain_loss()
+
+    def is_expired(self) -> bool:
+        if self.tracked_rounds >= self.max_rounds:
+            return True
+        return False
+
+    def get_tracker_id(self) -> uuid.uuid4:
+        return self.tracker_id
+
+    def _calculate_gain_loss(self) -> float:
+        return self.gain * (self.tracked_rounds**2)

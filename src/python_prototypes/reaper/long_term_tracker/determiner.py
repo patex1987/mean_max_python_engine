@@ -1,3 +1,6 @@
+from python_prototypes.reaper.long_term_tracker.tracker_units import (
+    HarvestSuccessTracker,
+)
 from python_prototypes.reaper.q_state_types import MissionStep, ReaperActionTypes
 from python_prototypes.reaper.target_selector import SelectedTargetInformation
 
@@ -18,12 +21,11 @@ def get_success_long_term_tracker(
     """
     match latest_goal_type:
         case ReaperActionTypes.harvest_safe:
-            HarvestTracker()
-            pass
+            return HarvestSuccessTracker(original_water_target=original_target)
         case ReaperActionTypes.harvest_risky:
-            pass
+            return HarvestSuccessTracker(original_water_target=original_target)
         case ReaperActionTypes.harvest_dangerous:
-            pass
+            return HarvestSuccessTracker(original_water_target=original_target)
         case ReaperActionTypes.ram_reaper_close:
             # ram - check for 5 rounds if that reaper was not able to gain any water
             pass

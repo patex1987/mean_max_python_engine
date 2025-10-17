@@ -15,7 +15,6 @@ class DistanceCategories(Enum):
 
 
 class DistanceCategoriesRetriever:
-
     def __init__(self, square_count):
         grid_squares = square_count**2
         self.close_limit = grid_squares // 20
@@ -38,7 +37,6 @@ class WaterRiskCategories(Enum):
 
 
 class WaterRiskCategoriesRetriever:
-
     def __init__(self, square_count: int):
         grid_squares = square_count**2
         self.dangerous_limit = grid_squares // 90

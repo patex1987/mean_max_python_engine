@@ -55,7 +55,7 @@ class ReaperAndWreckOnlyScenario:
     @classmethod
     def create_with_coordinates(
         cls, wreck_coordinate: Coordinate, reaper_coordinate: Coordinate
-    ) -> 'ReaperAndWreckOnlyScenario':
+    ) -> "ReaperAndWreckOnlyScenario":
         wreck = Unit(
             unit_type=Entity.WRECK.value,
             x=wreck_coordinate.x,
@@ -81,7 +81,6 @@ class ReaperAndWreckOnlyScenario:
         return cls(wreck=wreck, player_reaper=player_reaper)
 
     def get_full_grid_state(self) -> GameGridInformation:
-
         full_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
 
         wreck_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)

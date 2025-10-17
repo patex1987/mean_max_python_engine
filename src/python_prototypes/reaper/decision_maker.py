@@ -7,12 +7,18 @@ from python_prototypes.field_types import (
     PlayerState,
     GridUnitState,
 )
-from python_prototypes.reaper.q_orchestrator import ReaperGameState, find_target_grid_unit_state, get_updated_goal_type
+from python_prototypes.reaper.q_orchestrator import (
+    ReaperGameState,
+    find_target_grid_unit_state,
+    get_updated_goal_type,
+)
 from python_prototypes.reaper.q_state_types import (
     ReaperQState,
     ReaperActionTypes,
 )
-from python_prototypes.reaper.target_availability_determiner import TargetAvailabilityState
+from python_prototypes.reaper.target_availability_determiner import (
+    TargetAvailabilityState,
+)
 
 
 class ReaperDecisionType(Enum):
@@ -37,7 +43,7 @@ def reaper_decider(
     player_state: PlayerState,
 ) -> ReaperDecisionOutput:
     """
-    this determines the what (i.e. what to do), but doesn't determine the
+    this determines THE what (i.e. what to do), but doesn't determine THE
     how (i.e. doesn't determine what path, steps to take to get there)
 
     :param reaper_game_state:
@@ -72,8 +78,10 @@ def reaper_decider(
 
     if actual_target_grid_unit_state:
         reaper_game_state.target_tracker.track(
-            player_reaper_unit=player_state.reaper_state, target_unit=actual_target_grid_unit_state
+            player_reaper_unit=player_state.reaper_state,
+            target_unit=actual_target_grid_unit_state,
         )
+        reaper_game_state.current_targets_player_id = actual_target_grid_unit_state.unit.player
 
     target_availability = reaper_game_state.get_goal_target_availability(
         target_grid_unit=actual_target_grid_unit_state,
@@ -143,4 +151,5 @@ def get_new_decision(
     reaper_game_state.target_tracker.track(
         player_reaper_unit=player_state.reaper_state, target_unit=target_grid_unit_state
     )
+    reaper_game_state.current_targets_player_id = target_grid_unit_state.unit.player
     return ReaperDecisionOutput(output_type, new_reaper_goal_type, target_grid_unit_state)

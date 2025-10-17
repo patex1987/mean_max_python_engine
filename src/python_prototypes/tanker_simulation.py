@@ -13,14 +13,14 @@ WATER_TOWN_RADIUS = 3000
 PLAYFIELD_RADIUS = 6000
 
 
-def get_next_tanker_state(tanker_state: 'TankerState') -> 'TankerState':
+def get_next_tanker_state(tanker_state: "TankerState") -> "TankerState":
     """
     Simulate the movement of a tanker for a given duration and throttle.
     """
     if tanker_state.water_quantity == tanker_state.water_capacity:
         towards_center = is_moving_towards_center(tanker_state.x, tanker_state.y, tanker_state.vx, tanker_state.vy)
         if towards_center:
-            print('[DEBUG] turning the direction of the tanker, as the capacity is full')
+            print("[DEBUG] turning the direction of the tanker, as the capacity is full")
             opposite_vx, opposite_vy = -tanker_state.vx, -tanker_state.vy
 
             updated_vx, updated_vy = calculate_velocity(
@@ -30,7 +30,10 @@ def get_next_tanker_state(tanker_state: 'TankerState') -> 'TankerState':
                 tanker_state.mass,
                 tanker_state.friction,
             )
-            updated_x, updated_y = tanker_state.x + updated_vx, tanker_state.y + updated_vy
+            updated_x, updated_y = (
+                tanker_state.x + updated_vx,
+                tanker_state.y + updated_vy,
+            )
             new_tanker_state = TankerState(
                 updated_x,
                 updated_y,

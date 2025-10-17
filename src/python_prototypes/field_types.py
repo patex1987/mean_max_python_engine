@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
 
 
 class Entity(Enum):
@@ -35,7 +34,6 @@ class PlayerFieldTypes(Enum):
 
 
 class Unit:
-
     def __init__(
         self,
         x,

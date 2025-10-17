@@ -5,24 +5,37 @@ learning
 
 import random
 
-import pytest
 
-from python_prototypes.field_types import GridUnitState, GameGridInformation, EntitiesForReaper
-from python_prototypes.reaper.exception_types import ImpossibleTarget
-from python_prototypes.reaper.goal_possibility_determiner import get_goal_possibility_determiner
-from python_prototypes.reaper.long_term_tracker.orchestrator import LongTermRewardTrackingOrchestrator
+from python_prototypes.field_types import (
+    GridUnitState,
+    GameGridInformation,
+    EntitiesForReaper,
+)
+from python_prototypes.reaper.goal_possibility_determiner import (
+    get_goal_possibility_determiner,
+)
+from python_prototypes.reaper.long_term_tracker.orchestrator import (
+    LongTermRewardTrackingOrchestrator,
+)
 from python_prototypes.reaper.q_state_types import (
     ReaperQState,
     get_default_reaper_actions_q_weights,
     ReaperActionsQWeights,
-    get_default_water_relations,
-    get_default_enemies_relation,
     ReaperActionTypes,
     MissionStep,
 )
-from python_prototypes.reaper.target_availability_determiner import get_goal_target_determiner, TargetAvailabilityState
-from python_prototypes.reaper.target_selector import get_target_id_selector, SelectedTargetInformation
-from python_prototypes.reaper.target_tracker_determiner import get_target_tracker, BaseTracker
+from python_prototypes.reaper.target_availability_determiner import (
+    get_goal_target_determiner,
+    TargetAvailabilityState,
+)
+from python_prototypes.reaper.target_selector import (
+    get_target_id_selector,
+    SelectedTargetInformation,
+)
+from python_prototypes.reaper.target_tracker_determiner import (
+    get_target_tracker,
+    BaseTracker,
+)
 
 
 class ReaperGameState:
@@ -76,7 +89,8 @@ class ReaperGameState:
 
     def get_new_goal_type(self, reaper_q_state: ReaperQState) -> ReaperActionTypes:
         reaper_q_action_weights = self._q_table.setdefault(
-            reaper_q_state, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+            reaper_q_state,
+            ReaperActionsQWeights(get_default_reaper_actions_q_weights()),
         )
 
         exploration_rate = random.uniform(0, 1)
@@ -249,11 +263,13 @@ def find_target_grid_unit_state(
                     return tanker
             return None
         case _:
-            raise ValueError(f'Unknown target type: {target.type}')
+            raise ValueError(f"Unknown target type: {target.type}")
 
 
 def get_updated_goal_type(
-    reaper_q_state: ReaperQState, current_target: SelectedTargetInformation, current_goal_type: ReaperActionTypes
+    reaper_q_state: ReaperQState,
+    current_target: SelectedTargetInformation,
+    current_goal_type: ReaperActionTypes,
 ) -> ReaperActionTypes | None:
     """
     while you are moving every round a far risky wreck can become a close
@@ -276,7 +292,7 @@ def get_updated_goal_type(
             updated_reaper_water_category = reaper_q_state.reaper_water_relation[target_id]
             distance, risk = updated_reaper_water_category
             # TODO: we already have another TODO to this differently, especially don't rely on stupid strings
-            harvest_category_name = f'harvest_{risk}'
+            harvest_category_name = f"harvest_{risk}"
             harvest_category = ReaperActionTypes[harvest_category_name]
             return harvest_category
 
@@ -285,7 +301,7 @@ def get_updated_goal_type(
                 return None
             updated_enemy_other_category = reaper_q_state.reaper_id_category_relation[target_id]
             reaper_distance, water_distance = updated_enemy_other_category
-            ram_reaper_category_name = f'ram_reaper_{reaper_distance}'
+            ram_reaper_category_name = f"ram_reaper_{reaper_distance}"
             ram_category = ReaperActionTypes[ram_reaper_category_name]
             return ram_category
 
@@ -294,7 +310,7 @@ def get_updated_goal_type(
                 return None
             updated_enemy_other_category = reaper_q_state.other_id_category_mapping[target_id]
             other_distance, water_distance = updated_enemy_other_category
-            ram_other_category_name = f'ram_other_{other_distance}'
+            ram_other_category_name = f"ram_other_{other_distance}"
             ram_category = ReaperActionTypes[ram_other_category_name]
             return ram_category
 
@@ -314,6 +330,6 @@ def get_updated_goal_type(
                 return None
             updated_tanker_category = reaper_q_state.tanker_id_enemy_category_relation[target_id]
             distance, risk = updated_tanker_category
-            move_tanker_category_name = f'move_tanker_{risk}'
+            move_tanker_category_name = f"move_tanker_{risk}"
             move_tanker_category = ReaperActionTypes[move_tanker_category_name]
             return move_tanker_category

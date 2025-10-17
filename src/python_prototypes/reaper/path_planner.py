@@ -1,14 +1,9 @@
 from abc import ABC
-from dataclasses import dataclass
-from functools import partial
-from typing import Callable, Optional
+from typing import Optional
 
-from python_prototypes.field_types import GridUnitState
 from python_prototypes.reaper.q_state_types import ReaperActionTypes
 from python_prototypes.throttle_optimization import (
     find_optimal_throttle_sequence,
-    FITNESS_SCORE_TYPE,
-    ThrottleSequenceGeneticResult,
     ThrottleCalculationInput,
     GeneticConfiguration,
 )
@@ -60,9 +55,8 @@ class StrategyPath:
         return self.sequence.pop(0)
 
 
-def get_reaper_planner(goal_action_type: ReaperActionTypes) -> 'BaseReaperPathPlanner':
+def get_reaper_planner(goal_action_type: ReaperActionTypes) -> "BaseReaperPathPlanner":
     match goal_action_type:
-
         case ReaperActionTypes.harvest_safe:
             return GeneticStraightPathPlanner(REAPER_BEST_PATH_CONFIGURATION)
         case ReaperActionTypes.harvest_risky:
@@ -96,13 +90,11 @@ def get_reaper_planner(goal_action_type: ReaperActionTypes) -> 'BaseReaperPathPl
 
 
 class BaseReaperPathPlanner(ABC):
-
     def get_path(self, throttle_game_input) -> StrategyPath:
         pass
 
 
 class GeneticStraightPathPlanner(BaseReaperPathPlanner):
-
     def __init__(self, genetic_configuration: GeneticConfiguration):
         self.genetic_configuration = genetic_configuration
 

@@ -41,7 +41,9 @@ def select_doof_target_type(doof_selection_weights) -> DoofDecisionResults:
 
 
 def get_next_doof_state(
-    current_doof_state, enemy_grid_state: dict[tuple[int, int], list[GridUnitState]], doof_decision_weights
+    current_doof_state,
+    enemy_grid_state: dict[tuple[int, int], list[GridUnitState]],
+    doof_decision_weights,
 ):
     target_type = select_doof_target_type(doof_decision_weights)
     match target_type:
@@ -52,7 +54,8 @@ def get_next_doof_state(
             target_object = select_enemy_from_grid_position(selected_enemy_grid_position, enemy_grid_state)
             v0 = math.sqrt(current_doof_state.vx**2 + current_doof_state.vy**2)
             target_distance = get_euclidean_distance(
-                (current_doof_state.x, current_doof_state.y), (target_object.unit.x, target_object.unit.y)
+                (current_doof_state.x, current_doof_state.y),
+                (target_object.unit.x, target_object.unit.y),
             )
             throttles_to_target = find_optimal_throttle_sequence()
             next_throttle = throttles_to_target[0]

@@ -1,9 +1,7 @@
-import copy
 
 from python_prototypes.field_types import PlayerState, GameGridInformation
 from python_prototypes.reaper.long_term_tracker.tracker_units import LongTermTracker
 from python_prototypes.reaper.q_state_types import (
-    ReaperQState,
     MissionStep,
     ReaperActionsQWeights,
     get_default_reaper_actions_q_weights,
@@ -53,7 +51,8 @@ class LongTermRewardTrackingOrchestrator:
                 # TODO: move to a common propagate method
                 for mission_step in original_mission_steps:
                     q_table_change.setdefault(
-                        mission_step.q_state, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+                        mission_step.q_state,
+                        ReaperActionsQWeights(get_default_reaper_actions_q_weights()),
                     )
                     q_table_change[mission_step.q_state].inner_weigths_dict[mission_step.goal_type] += gain
 
@@ -73,7 +72,8 @@ class LongTermRewardTrackingOrchestrator:
                 # TODO: move to a common propagate method
                 for mission_step in original_mission_steps:
                     q_table_change.setdefault(
-                        mission_step.q_state, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+                        mission_step.q_state,
+                        ReaperActionsQWeights(get_default_reaper_actions_q_weights()),
                     )
                     q_table_change[mission_step.q_state].inner_weigths_dict[mission_step.goal_type] += loss
 

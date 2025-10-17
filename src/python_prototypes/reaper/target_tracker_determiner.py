@@ -12,7 +12,7 @@ from python_prototypes.field_types import GridUnitState
 from python_prototypes.reaper.q_state_types import ReaperActionTypes
 
 
-def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> 'BaseTracker':
+def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> "BaseTracker":
     """
     :param reaper_goal_type:
     :return:
@@ -51,11 +51,10 @@ def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> 'BaseTracker':
         case ReaperActionTypes.move_tanker_dangerous:
             return DynamicTargetTracker()
         case _:
-            raise ValueError(f'Invalid goal type: {reaper_goal_type}')
+            raise ValueError(f"Invalid goal type: {reaper_goal_type}")
 
 
 class BaseTracker(ABC):
-
     @abstractmethod
     def track(self, player_reaper_unit: GridUnitState, target_unit: GridUnitState):
         """
@@ -114,7 +113,6 @@ class BaseTracker(ABC):
 
 
 class StaticTargetTracker(BaseTracker):
-
     def __init__(self):
         self.manhattan_distances_from_target = []
         self.manhattan_distance_changes = []
@@ -128,7 +126,8 @@ class StaticTargetTracker(BaseTracker):
             self.manhattan_distance_changes.append(manhattan_distance - self.manhattan_distances_from_target[-2])
 
         euclidean_distance = get_euclidean_distance(
-            (player_reaper_unit.unit.x, player_reaper_unit.unit.y), (target_unit.unit.x, target_unit.unit.y)
+            (player_reaper_unit.unit.x, player_reaper_unit.unit.y),
+            (target_unit.unit.x, target_unit.unit.y),
         )
         self.euclidean_distances_from_target.append(euclidean_distance)
         if len(self.euclidean_distances_from_target) > 1:
@@ -144,7 +143,12 @@ class StaticTargetTracker(BaseTracker):
         if len(self.manhattan_distance_changes) < round_threshold:
             return False
         last_n_changes = self.euclidean_distance_changes[-round_threshold:]
-        is_growing = any(map(lambda pair: pair[0] > pair[1], zip(last_n_changes[1:], last_n_changes[:-1])))
+        is_growing = any(
+            map(
+                lambda pair: pair[0] > pair[1],
+                zip(last_n_changes[1:], last_n_changes[:-1]),
+            )
+        )
         return is_growing
 
     def total_round_threshold_breached(self, round_threshold: int) -> bool:
@@ -173,7 +177,6 @@ class StaticTargetTracker(BaseTracker):
 
 
 class DynamicTargetTracker(BaseTracker):
-
     def __init__(self):
         self.manhattan_distances_from_target = []
         self.manhattan_distance_changes = []
@@ -197,7 +200,8 @@ class DynamicTargetTracker(BaseTracker):
             self.manhattan_distance_changes.append(manhattan_distance - self.manhattan_distances_from_target[-2])
 
         euclidean_distance = get_euclidean_distance(
-            (player_reaper_unit.unit.x, player_reaper_unit.unit.y), (target_unit.unit.x, target_unit.unit.y)
+            (player_reaper_unit.unit.x, player_reaper_unit.unit.y),
+            (target_unit.unit.x, target_unit.unit.y),
         )
         self.euclidean_distances_from_target.append(euclidean_distance)
         if len(self.euclidean_distances_from_target) > 1:
@@ -239,7 +243,12 @@ class DynamicTargetTracker(BaseTracker):
         if len(self.manhattan_distance_changes) < round_threshold:
             return False
         last_n_changes = self.euclidean_distance_changes[-round_threshold:]
-        is_growing = any(map(lambda pair: pair[0] > pair[1], zip(last_n_changes[1:], last_n_changes[:-1])))
+        is_growing = any(
+            map(
+                lambda pair: pair[0] > pair[1],
+                zip(last_n_changes[1:], last_n_changes[:-1]),
+            )
+        )
         return is_growing
 
     def total_round_threshold_breached(self, round_threshold: int) -> bool:
@@ -346,7 +355,6 @@ class NoOpTracker(BaseTracker):
 
 
 class RoundCountTracker(BaseTracker):
-
     def __init__(self):
         self._round_count = 0
 

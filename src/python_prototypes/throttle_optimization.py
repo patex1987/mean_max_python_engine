@@ -7,7 +7,7 @@ import random
 
 import time
 from dataclasses import dataclass
-from typing import Tuple, Optional
+from typing import Tuple
 
 TIMEOUT_1000_MS = 1000
 # TODO: create a custom type
@@ -147,7 +147,11 @@ def find_optimal_throttle_sequence(
 
         # Step 5: Apply mutation to the offspring
         next_generation = [
-            mutate(child, genetic_configration.throttle_range, genetic_configration.mutation_rate)
+            mutate(
+                child,
+                genetic_configration.throttle_range,
+                genetic_configration.mutation_rate,
+            )
             for child in next_generation
         ]
 
@@ -338,7 +342,7 @@ def get_distance_for_throttles_velocities(v0, m, f, throttles, start_position):
     return distance_velocities
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
     # # Example usage
     # v0 = 0.0  # initial speed
