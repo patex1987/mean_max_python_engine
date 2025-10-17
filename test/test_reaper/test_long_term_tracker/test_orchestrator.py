@@ -8,6 +8,45 @@ from python_prototypes.reaper.q_state_types import MissionStep, ReaperActionType
 from python_prototypes.reaper.target_selector import SelectedTargetInformation
 
 
+def execute_rounds(orchestrator, reaper_movement_sequence_water_gain, wreck_coordinate) -> dict:
+    """
+    Execute the game rounds based on the provided reaper movement.
+
+    Returns the water gain/loss q table changes
+    :param orchestrator:
+    :param reaper_movement_sequence_water_gain:
+    :param wreck_coordinate:
+    :return:
+    """
+    reaper_start_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, Coordinate(0, 0))
+    full_grid_state = reaper_start_scenario.get_full_grid_state()
+    player_state = reaper_start_scenario.get_player_state()
+    reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
+    original_mission_steps = [
+        MissionStep(q_state_key=reaper_q_state.get_state_tuple_key(), goal_type=ReaperActionTypes.harvest_safe)
+    ]
+    observed_gains_losses = []
+    for reaper_position, water_gain in reaper_movement_sequence_water_gain:
+        game_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, reaper_position)
+        full_grid_state = game_scenario.get_full_grid_state()
+        player_state = game_scenario.get_player_state(water_gain)
+        # reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
+
+        q_state_gains_losses = orchestrator.orchestrate(
+            original_mission_steps=original_mission_steps,
+            player_state=player_state,
+            enemy_1_state=PlayerState(
+                reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
+            ),
+            enemy_2_state=PlayerState(
+                reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
+            ),
+            game_grid_information=full_grid_state,
+        )
+        observed_gains_losses.append(q_state_gains_losses)
+    return observed_gains_losses
+
+
 class TestLongTermRewardTrackingOrchestrator:
 
     def test_harvest_success_hit_twice(self):
@@ -36,33 +75,9 @@ class TestLongTermRewardTrackingOrchestrator:
             (Coordinate(x=1400, y=1400), 1),
             (Coordinate(x=500, y=1400), 0),
         ]
-        reaper_start_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, Coordinate(0, 0))
-        full_grid_state = reaper_start_scenario.get_full_grid_state()
-        player_state = reaper_start_scenario.get_player_state()
-        reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
-        original_mission_steps = [
-            MissionStep(q_state_key=reaper_q_state.get_state_tuple_key(), goal_type=ReaperActionTypes.harvest_safe)
-        ]
-
-        observed_gains_losses = []
-        for reaper_position, water_gain in reaper_movement_sequence_water_gain:
-            game_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, reaper_position)
-            full_grid_state = game_scenario.get_full_grid_state()
-            player_state = game_scenario.get_player_state(water_gain)
-            # reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
-
-            q_state_gains_losses = orchestrator.orchestrate(
-                original_mission_steps=original_mission_steps,
-                player_state=player_state,
-                enemy_1_state=PlayerState(
-                    reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
-                ),
-                enemy_2_state=PlayerState(
-                    reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
-                ),
-                game_grid_information=full_grid_state,
-            )
-            observed_gains_losses.append(q_state_gains_losses)
+        observed_gains_losses = execute_rounds(
+            orchestrator, reaper_movement_sequence_water_gain, wreck_coordinate
+        )
 
         expected_gain_loss_lengths = [0, 1, 0, 1, 0]
         for idx, observed_gain_loss in enumerate(observed_gains_losses):
@@ -92,33 +107,9 @@ class TestLongTermRewardTrackingOrchestrator:
             (Coordinate(x=500, y=1400), 1),
             (Coordinate(x=3600, y=3600), 0),
         ]
-        reaper_start_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, Coordinate(0, 0))
-        full_grid_state = reaper_start_scenario.get_full_grid_state()
-        player_state = reaper_start_scenario.get_player_state()
-        reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
-        original_mission_steps = [
-            MissionStep(q_state_key=reaper_q_state.get_state_tuple_key(), goal_type=ReaperActionTypes.harvest_safe)
-        ]
-
-        observed_gains_losses = []
-        for reaper_position, water_gain in reaper_movement_sequence_water_gain:
-            game_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, reaper_position)
-            full_grid_state = game_scenario.get_full_grid_state()
-            player_state = game_scenario.get_player_state(water_gain)
-            # reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
-
-            q_state_gains_losses = orchestrator.orchestrate(
-                original_mission_steps=original_mission_steps,
-                player_state=player_state,
-                enemy_1_state=PlayerState(
-                    reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
-                ),
-                enemy_2_state=PlayerState(
-                    reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
-                ),
-                game_grid_information=full_grid_state,
-            )
-            observed_gains_losses.append(q_state_gains_losses)
+        observed_gains_losses = execute_rounds(
+            orchestrator, reaper_movement_sequence_water_gain, wreck_coordinate
+        )
 
         expected_gain_loss_lengths = [0, 0, 0, 0, 0]
         for idx, observed_gain_loss in enumerate(observed_gains_losses):
@@ -148,32 +139,6 @@ class TestLongTermRewardTrackingOrchestrator:
             (Coordinate(x=500, y=1400), 1),
             (Coordinate(x=3600, y=3600), 0),
         ]
-        reaper_start_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, Coordinate(0, 0))
-        full_grid_state = reaper_start_scenario.get_full_grid_state()
-        player_state = reaper_start_scenario.get_player_state()
-        reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
-        original_mission_steps = [
-            MissionStep(q_state_key=reaper_q_state.get_state_tuple_key(), goal_type=ReaperActionTypes.harvest_safe)
-        ]
-
-        observed_gains_losses = []
-        for reaper_position, water_gain in reaper_movement_sequence_water_gain:
-            game_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, reaper_position)
-            full_grid_state = game_scenario.get_full_grid_state()
-            player_state = game_scenario.get_player_state(water_gain)
-            # reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
-
-            q_state_gains_losses = orchestrator.orchestrate(
-                original_mission_steps=original_mission_steps,
-                player_state=player_state,
-                enemy_1_state=PlayerState(
-                    reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
-                ),
-                enemy_2_state=PlayerState(
-                    reaper_state=None, destroyer_state=None, doof_state=None, rage=0, score=0, prev_rage=0, prev_score=0
-                ),
-                game_grid_information=full_grid_state,
-            )
-            observed_gains_losses.append(q_state_gains_losses)
+        _ = execute_rounds(orchestrator, reaper_movement_sequence_water_gain, wreck_coordinate)
 
         assert harvest_success_tracker.tracker_id not in orchestrator.success_trackers
