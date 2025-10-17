@@ -47,8 +47,7 @@ def reaper_decider(
     :return: ReaperDecisionOutput
 
     """
-    q_state_key = reaper_q_state.get_state_tuple_key()
-    reaper_game_state.register_q_state(q_state_key)
+    reaper_game_state.register_q_state(reaper_q_state)
     on_mission = reaper_game_state.is_on_mission()
 
     if not on_mission:
@@ -60,7 +59,7 @@ def reaper_decider(
             ReaperDecisionType.new_target_on_undefined,
         )
         # registration is not needed, as it is already registered by the above lines
-        reaper_game_state.apply_step_penalty(q_state_key)
+        reaper_game_state.apply_step_penalty(reaper_q_state)
         return decision_output
 
     current_target = reaper_game_state.current_target_info
@@ -85,8 +84,8 @@ def reaper_decider(
     adjusted_goal_type = get_updated_goal_type(reaper_q_state, current_target, current_goal_type)
     # TODO: the next line can be decided based on the `TargetAvailabilityState.invalid` state
     actual_goal_type = adjusted_goal_type or current_goal_type
-    reaper_game_state.add_current_step_to_mission(q_state_key, actual_goal_type)
-    reaper_game_state.apply_step_penalty(q_state_key)
+    reaper_game_state.add_current_step_to_mission(reaper_q_state, actual_goal_type)
+    reaper_game_state.apply_step_penalty(reaper_q_state)
 
     if target_availability == TargetAvailabilityState.invalid:
         reaper_game_state.propagate_failed_goal()
@@ -98,8 +97,8 @@ def reaper_decider(
             ReaperDecisionType.new_target_on_failure,
         )
         # TODO: see one of the TODOs above, duplicated from there
-        reaper_game_state.add_current_step_to_mission(q_state_key, new_decision.goal_action_type)
-        reaper_game_state.apply_step_penalty(q_state_key)
+        reaper_game_state.add_current_step_to_mission(reaper_q_state, new_decision.goal_action_type)
+        reaper_game_state.apply_step_penalty(reaper_q_state)
         return new_decision
 
     if target_availability == TargetAvailabilityState.goal_reached_success:
@@ -112,8 +111,8 @@ def reaper_decider(
             ReaperDecisionType.new_target_on_success,
         )
         # TODO: see one of the TODOs above, duplicated from there
-        reaper_game_state.add_current_step_to_mission(q_state_key, new_decision.goal_action_type)
-        reaper_game_state.apply_step_penalty(q_state_key)
+        reaper_game_state.add_current_step_to_mission(reaper_q_state, new_decision.goal_action_type)
+        reaper_game_state.apply_step_penalty(reaper_q_state)
         return new_decision
 
     adjusted_goal_type = reaper_game_state.current_goal_type

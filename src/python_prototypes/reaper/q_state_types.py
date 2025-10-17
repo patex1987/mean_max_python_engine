@@ -63,6 +63,40 @@ class ReaperQState:
         )
         return composite_tuple_key
 
+    def __hash__(self):
+        return hash(self.get_state_tuple_key())
+
+    def __eq__(self, other: 'ReaperQState'):
+        return self.get_state_tuple_key() == other.get_state_tuple_key()
+
+    def __repr__(self):
+        """
+        Switch back to the non-filtered version, if this repr makes it too slow
+
+        return 'ReaperQState(water_reaper_relation={0}, water_other_relation={1}, tanker_enemy_relation={2}, player_reaper_relation={3}, player_other_relation={4}, super_power_available={5})'.format(
+            self.water_reaper_relation,
+            self.water_other_relation,
+            self.tanker_enemy_relation,
+            self.player_reaper_relation,
+            self.player_other_relation,
+            self.super_power_available,
+        )
+        """
+        non_null_water_reaper_relation = {key: val for key, val in self.water_reaper_relation.items() if val}
+        non_null_water_other_relation = {key: val for key, val in self.water_other_relation.items() if val}
+        non_null_tanker_enemy_relation = {key: val for key, val in self.tanker_enemy_relation.items() if val}
+        non_null_player_reaper_relation = {key: val for key, val in self.player_reaper_relation.items() if val}
+        non_null_player_other_relation = {key: val for key, val in self.player_other_relation.items() if val}
+
+        return 'ReaperQState(water_reaper_relation={0}, water_other_relation={1}, tanker_enemy_relation={2}, player_reaper_relation={3}, player_other_relation={4}, super_power_available={5})'.format(
+            non_null_water_reaper_relation,
+            non_null_water_other_relation,
+            non_null_tanker_enemy_relation,
+            non_null_player_reaper_relation,
+            non_null_player_other_relation,
+            self.super_power_available,
+        )
+
 
 class ReaperActionsQWeights:
 
@@ -191,5 +225,5 @@ def convert_to_state_dict(relation: dict[tuple[str, str], list[Any]]) -> dict[tu
 
 @dataclass
 class MissionStep:
-    q_state_key: tuple
+    q_state: ReaperQState
     goal_type: ReaperActionTypes

@@ -36,7 +36,7 @@ class LongTermRewardTrackingOrchestrator:
         """
         return only the adjustments to the q table, but don't mutate the q table
 
-        dict[q_state_key][goal_type] = +/- gain / loss
+        dict[q_state][goal_type] = +/- gain / loss
         TODO: if possible send something simpler instead of game_grid_information
         """
         q_table_change = {}
@@ -53,9 +53,9 @@ class LongTermRewardTrackingOrchestrator:
                 # TODO: move to a common propagate method
                 for mission_step in original_mission_steps:
                     q_table_change.setdefault(
-                        mission_step.q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+                        mission_step.q_state, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
                     )
-                    q_table_change[mission_step.q_state_key].inner_weigths_dict[mission_step.goal_type] += gain
+                    q_table_change[mission_step.q_state].inner_weigths_dict[mission_step.goal_type] += gain
 
             if tracker.is_expired():
                 self.success_trackers.pop(tracker_id)
@@ -73,9 +73,9 @@ class LongTermRewardTrackingOrchestrator:
                 # TODO: move to a common propagate method
                 for mission_step in original_mission_steps:
                     q_table_change.setdefault(
-                        mission_step.q_state_key, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
+                        mission_step.q_state, ReaperActionsQWeights(get_default_reaper_actions_q_weights())
                     )
-                    q_table_change[mission_step.q_state_key].inner_weigths_dict[mission_step.goal_type] += loss
+                    q_table_change[mission_step.q_state].inner_weigths_dict[mission_step.goal_type] += loss
 
             if tracker.is_expired():
                 self.failure_trackers.pop(tracker_id)

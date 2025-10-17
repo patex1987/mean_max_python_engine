@@ -22,9 +22,7 @@ def execute_rounds(orchestrator, reaper_movement_sequence_water_gain, wreck_coor
     full_grid_state = reaper_start_scenario.get_full_grid_state()
     player_state = reaper_start_scenario.get_player_state()
     reaper_q_state = calculate_reaper_q_state(full_grid_state, player_state)
-    original_mission_steps = [
-        MissionStep(q_state_key=reaper_q_state.get_state_tuple_key(), goal_type=ReaperActionTypes.harvest_safe)
-    ]
+    original_mission_steps = [MissionStep(q_state=reaper_q_state, goal_type=ReaperActionTypes.harvest_safe)]
     observed_gains_losses = []
     for reaper_position, water_gain in reaper_movement_sequence_water_gain:
         game_scenario = ReaperAndWreckOnlyScenario.create_with_coordinates(wreck_coordinate, reaper_position)
@@ -75,9 +73,7 @@ class TestLongTermRewardTrackingOrchestrator:
             (Coordinate(x=1400, y=1400), 1),
             (Coordinate(x=500, y=1400), 0),
         ]
-        observed_gains_losses = execute_rounds(
-            orchestrator, reaper_movement_sequence_water_gain, wreck_coordinate
-        )
+        observed_gains_losses = execute_rounds(orchestrator, reaper_movement_sequence_water_gain, wreck_coordinate)
 
         expected_gain_loss_lengths = [0, 1, 0, 1, 0]
         for idx, observed_gain_loss in enumerate(observed_gains_losses):
@@ -107,9 +103,7 @@ class TestLongTermRewardTrackingOrchestrator:
             (Coordinate(x=500, y=1400), 1),
             (Coordinate(x=3600, y=3600), 0),
         ]
-        observed_gains_losses = execute_rounds(
-            orchestrator, reaper_movement_sequence_water_gain, wreck_coordinate
-        )
+        observed_gains_losses = execute_rounds(orchestrator, reaper_movement_sequence_water_gain, wreck_coordinate)
 
         expected_gain_loss_lengths = [0, 0, 0, 0, 0]
         for idx, observed_gain_loss in enumerate(observed_gains_losses):

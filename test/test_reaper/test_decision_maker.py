@@ -105,8 +105,7 @@ class TestReaperDecider:
         reaper_game_state._is_mission_set = True
 
         reaper_game_state.current_target_info = SelectedTargetInformation(id=12345, type=EntitiesForReaper.WRECK)
-        q_state_key = reaper_q_state.get_state_tuple_key()
-        reaper_game_state.add_current_step_to_mission(q_state_key=q_state_key, goal_type=ReaperActionTypes.harvest_safe)
+        reaper_game_state.add_current_step_to_mission(q_state=reaper_q_state, goal_type=ReaperActionTypes.harvest_safe)
         tracker = get_target_tracker(reaper_game_state.current_goal_type)
         reaper_game_state.target_tracker = tracker
         assert reaper_game_state.current_goal_type == ReaperActionTypes.harvest_safe
@@ -142,7 +141,7 @@ class TestReaperDecider:
 
         reaper_game_state = ReaperGameState()
         reaper_game_state._is_mission_set = True
-        reaper_game_state.add_current_step_to_mission(reaper_q_state.get_state_tuple_key(), ReaperActionTypes.wait)
+        reaper_game_state.add_current_step_to_mission(reaper_q_state, ReaperActionTypes.wait)
         tracker = get_target_tracker(reaper_game_state.current_goal_type)
         reaper_game_state.target_tracker = tracker
         reaper_game_state.target_tracker.track(player_state.reaper_state, None)
@@ -187,9 +186,7 @@ class TestReaperDecider:
         reaper_game_state = ReaperGameState()
         reaper_game_state._is_mission_set = True
         # there is a close, close reaper available in the grid
-        reaper_game_state.add_current_step_to_mission(
-            reaper_q_state.get_state_tuple_key(), ReaperActionTypes.ram_other_close
-        )
+        reaper_game_state.add_current_step_to_mission(reaper_q_state, ReaperActionTypes.ram_other_close)
         reaper_game_state.current_target_info = SelectedTargetInformation(
             id=target_unit.unit.unit_id, type=EntitiesForReaper.OTHER_ENEMY
         )
@@ -273,7 +270,7 @@ class TestReaperDecider:
         assert decision_output.target_grid_unit.unit.unit_id == expected_target_unit.unit.unit_id
         assert decision_output.goal_action_type == ReaperActionTypes.ram_other_close
         assert len(reaper_game_state._mission_steps) == 1
-        assert reaper_game_state._mission_steps[0].q_state_key == reaper_q_state_round_1.get_state_tuple_key()
+        assert reaper_game_state._mission_steps[0].q_state == reaper_q_state_round_1
         assert reaper_game_state._mission_steps[0].goal_type == ReaperActionTypes.ram_other_close
 
         # second round
@@ -308,16 +305,10 @@ class TestReaperDecider:
 
         q_table = reaper_game_state._q_table
         assert len(q_table) == 2
-        assert reaper_q_state_round_1.get_state_tuple_key() in q_table
-        assert reaper_q_state_round_2.get_state_tuple_key() in q_table
-        assert (
-            q_table[reaper_q_state_round_1.get_state_tuple_key()].inner_weigths_dict[ReaperActionTypes.ram_other_close]
-            == 9.5
-        )
-        assert (
-            q_table[reaper_q_state_round_2.get_state_tuple_key()].inner_weigths_dict[ReaperActionTypes.ram_other_close]
-            == 9.0
-        )
+        assert reaper_q_state_round_1 in q_table
+        assert reaper_q_state_round_2 in q_table
+        assert q_table[reaper_q_state_round_1].inner_weigths_dict[ReaperActionTypes.ram_other_close] == 9.5
+        assert q_table[reaper_q_state_round_2].inner_weigths_dict[ReaperActionTypes.ram_other_close] == 9.0
 
     def test_target_reached_failed(self):
         """
@@ -369,7 +360,7 @@ class TestReaperDecider:
         assert decision_output.target_grid_unit.unit.unit_id == expected_target_unit.unit.unit_id
         assert decision_output.goal_action_type == ReaperActionTypes.ram_other_close
         assert len(reaper_game_state._mission_steps) == 1
-        assert reaper_game_state._mission_steps[0].q_state_key == reaper_q_state_round_1.get_state_tuple_key()
+        assert reaper_game_state._mission_steps[0].q_state == reaper_q_state_round_1
         assert reaper_game_state._mission_steps[0].goal_type == ReaperActionTypes.ram_other_close
 
         # second round
@@ -414,9 +405,7 @@ class TestReaperDecider:
 
         q_table = reaper_game_state._q_table
         assert len(q_table) == 2
-        q_state_key_round_1 = reaper_q_state_round_1.get_state_tuple_key()
-        q_state_key_round_2 = reaper_q_state_round_2.get_state_tuple_key()
-        assert q_state_key_round_1 in q_table
-        assert q_state_key_round_2 in q_table
-        assert q_table[q_state_key_round_1].inner_weigths_dict[ReaperActionTypes.ram_other_close] == -10.5
-        assert q_table[q_state_key_round_2].inner_weigths_dict[ReaperActionTypes.ram_other_close] == -11.0
+        assert reaper_q_state_round_1 in q_table
+        assert reaper_q_state_round_2 in q_table
+        assert q_table[reaper_q_state_round_1].inner_weigths_dict[ReaperActionTypes.ram_other_close] == -10.5
+        assert q_table[reaper_q_state_round_2].inner_weigths_dict[ReaperActionTypes.ram_other_close] == -11.0
