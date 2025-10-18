@@ -33,39 +33,6 @@ def is_inside_playfield(x: int, y: int, radius_threshold: int = PLAYFIELD_RADIUS
     return (x**2 + y**2) ** 0.5 <= radius_threshold
 
 
-def calculate_velocity(v0x: float, v0y: float, throttle: int, m: float, f: float) -> tuple[float, float]:
-    """
-    Calculate the new velocities (vx, vy) given the initial velocities in x and y directions,
-    the overall throttle, and the mass and friction.
-
-    Parameters:
-    - v0x: Initial velocity in the x direction
-    - v0y: Initial velocity in the y direction
-    - throttle: Overall throttle applied (affects both x and y components)
-    - m: Mass
-    - f: Friction factor
-
-    Returns:
-    - vx: New velocity in the x direction
-    - vy: New velocity in the y direction
-    """
-
-    # Step 1: Calculate the initial magnitude of the velocity vector
-    v0 = math.sqrt(v0x**2 + v0y**2)
-
-    # Step 2: Apply throttle to the velocity magnitude
-    v = (v0 + (throttle / m)) * (1 - f)
-
-    # Step 3: Calculate the angle (direction) of the velocity vector
-    theta = math.atan2(v0y, v0x)
-
-    # Step 4: Break the new velocity magnitude into x and y components
-    vx = v * math.cos(theta)
-    vy = v * math.sin(theta)
-
-    return vx, vy
-
-
 def get_grid_position(coordinate: tuple[int, int], split_size=SQUARE_SPLIT) -> tuple[int, int]:
     """
     Get the grid position of a coordinate.

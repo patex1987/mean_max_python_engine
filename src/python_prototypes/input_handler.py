@@ -118,7 +118,7 @@ def original_game_main():
 
         # Write an action using print
         # To debug: print("Debug messages...", file=sys.stderr, flush=True)
-        main_game_engine.run_round_raw(
+        round_command = main_game_engine.run_round_raw(
             enemy_others_grid_state,
             enemy_others_id_to_grid_coord,
             enemy_reaper_grid_state,
@@ -140,6 +140,9 @@ def original_game_main():
             enemy_2_rage,
         )
 
-        print("WAIT")
-        print("WAIT")
-        print("WAIT")
+        print(round_command.reaper_command)
+        print(round_command.destroyer_command)
+        print(round_command.doof_command)
+
+
+original_game_main()

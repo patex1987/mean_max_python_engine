@@ -1,4 +1,4 @@
-from python_prototypes.real_game_mocks.full_grid_state import (
+from test.real_game_mocks.full_grid_state import (
     ExampleBasicScenarioIncomplete,
 )
 

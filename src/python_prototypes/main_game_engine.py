@@ -1,3 +1,5 @@
+import sys
+from dataclasses import dataclass
 from typing import Type
 
 from python_prototypes.field_types import (
@@ -52,7 +54,7 @@ class MainGameEngine:
         enemy_2_score: int,
         enemy_1_rage: int,
         enemy_2_rage: int,
-    ):
+    ) -> 'GameRoundCommand':
         """
         Handles the raw data incoming rom every round in the game
 
@@ -119,7 +121,7 @@ class MainGameEngine:
             prev_score=self.enemy_2_prev_score,
             prev_rage=self.enemy_2_prev_rage,
         )
-        self.run_round(game_grid_information, player_state, enemy_1_state, enemy_2_state)
+        round_command = self.run_round(game_grid_information, player_state, enemy_1_state, enemy_2_state)
 
         self.player_prev_score = my_score
         self.player_prev_rage = my_rage
@@ -128,13 +130,15 @@ class MainGameEngine:
         self.enemy_2_prev_score = enemy_2_score
         self.enemy_2_prev_rage = enemy_2_rage
 
+        return round_command
+
     def run_round(
         self,
         game_grid_information: GameGridInformation,
         player_state: PlayerState,
         enemy_1_state: PlayerState,
         enemy_2_state: PlayerState,
-    ):
+    ) -> 'GameRoundCommand':
         reaper_q_state = calculate_reaper_q_state(
             game_grid_information=game_grid_information, player_state=player_state
         )
@@ -149,6 +153,8 @@ class MainGameEngine:
             game_grid_information=game_grid_information,
             player_state=player_state,
         )
+
+        print(f"[MAIN] reaper decision: {reaper_decision.decision_type}, {reaper_decision.goal_action_type}", file=sys.stderr, flush=True)
 
         strategy_path = self.reaper_strategy_path_decider.reaper_get_strategy_path(
             original_mission_steps=original_mission_steps,
@@ -167,6 +173,23 @@ class MainGameEngine:
             enemy_2_state,
             game_grid_information,
         )
+        self.reaper_game_state._q_table.update(q_table_changes)
 
-        reaper_next_step = strategy_path.get_next_step()
-        print(reaper_next_step)
+        reaper_command = "WAIT"
+        reaper_next_throttle = strategy_path.get_next_step()
+        # TODO: we need a bit more advanced storage and we need to store the full commands not just the throttles
+        self.reaper_game_state._planned_game_output_path = strategy_path
+
+        if reaper_next_throttle:
+            x, y = reaper_decision.target_grid_unit.unit.x, reaper_decision.target_grid_unit.unit.y
+            reaper_command = f"{x} {y} {reaper_next_throttle}"
+        return GameRoundCommand(
+            reaper_command=reaper_command,
+        )
+
+
+@dataclass
+class GameRoundCommand:
+    reaper_command: str = "WAIT"
+    destroyer_command: str = "WAIT"
+    doof_command: str = "WAIT"

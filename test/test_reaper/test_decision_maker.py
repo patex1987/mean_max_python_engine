@@ -8,7 +8,7 @@ from python_prototypes.field_types import (
     Entity,
     EntitiesForReaper,
 )
-from python_prototypes.real_game_mocks.full_grid_state import (
+from test.real_game_mocks.full_grid_state import (
     ExampleBasicScenarioIncomplete,
 )
 from python_prototypes.reaper.decision_maker import MainReaperDecider, ReaperDecisionType

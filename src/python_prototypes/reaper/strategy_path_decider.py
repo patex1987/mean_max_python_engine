@@ -8,6 +8,7 @@ from python_prototypes.reaper.long_term_tracker.determiner import (
     get_failure_long_term_tracker,
 )
 from python_prototypes.reaper.path_planner import StrategyPath, get_reaper_planner
+from python_prototypes.reaper.q_orchestrator import ReaperGameState
 from python_prototypes.reaper.target_selector import SelectedTargetInformation
 from python_prototypes.throttle_optimization import ThrottleCalculationInput
 from python_prototypes.unit_parameters import UnitFriction
@@ -22,7 +23,7 @@ class DefaultReaperSrategyPathDecider:
         latest_goal_type,
         player_state,
         reaper_decision,
-        reaper_game_state,
+        reaper_game_state: ReaperGameState,
     ) -> StrategyPath:
         """
         Get the strategy path (throttles) to reach the target
@@ -40,6 +41,7 @@ class DefaultReaperSrategyPathDecider:
         match reaper_decision.decision_type:
             case ReaperDecisionType.existing_target:
                 strategy_path = reaper_game_state._planned_game_output_path
+                return strategy_path
             case ReaperDecisionType.replan_existing_target:
                 planner = get_reaper_planner(reaper_decision.goal_action_type)
                 v0 = calculate_speed_from_vectors(
@@ -63,6 +65,7 @@ class DefaultReaperSrategyPathDecider:
                     d_target=distance_to_target,
                 )
                 strategy_path = planner.get_path(reaper_throttle_calculation_input)
+                return strategy_path
             case (
                 ReaperDecisionType.new_target_on_failure
                 | ReaperDecisionType.new_target_on_success
@@ -73,13 +76,16 @@ class DefaultReaperSrategyPathDecider:
                     long_term_tracker = get_success_long_term_tracker(
                         original_target, original_mission_steps, latest_goal_type
                     )
+                    reaper_game_state.long_term_reward_tracking_orchestrator.register_success_tracker(long_term_tracker)
                 if reaper_decision.decision_type == ReaperDecisionType.new_target_on_failure:
                     long_term_tracker = get_failure_long_term_tracker(
                         original_target, original_mission_steps, latest_goal_type
                     )
+                    reaper_game_state.long_term_reward_tracking_orchestrator.register_failure_tracker(long_term_tracker)
 
-                reaper_game_state.register_long_term_tracker(long_term_tracker, original_target)
-
+                # TODO: not sure if doing this is fully correct
+                if not reaper_decision.target_grid_unit:
+                    return StrategyPath([])
                 planner = get_reaper_planner(reaper_decision.goal_action_type)
                 v0 = calculate_speed_from_vectors(
                     vx=player_state.reaper_state.unit.vx,
@@ -102,6 +108,9 @@ class DefaultReaperSrategyPathDecider:
                     d_target=distance_to_target,
                 )
                 strategy_path = planner.get_path(reaper_throttle_calculation_input)
+                return strategy_path
             case _:
                 raise ValueError(f"Unknown decision type: {reaper_decision.decision_type}")
+
+        strategy_path = StrategyPath([])
         return strategy_path

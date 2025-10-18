@@ -1,7 +1,6 @@
 from dataclasses import dataclass
+from functools import partial
 from typing import Callable
-
-from mypy.plugins.default import partial
 
 from python_prototypes.field_types import EntitiesForReaper
 from python_prototypes.reaper.exception_types import ImpossibleTarget
@@ -32,13 +31,13 @@ def get_target_id_selector(
             return partial(select_water_target_by_risk_level, risk_level="dangerous")
         case ReaperActionTypes.ram_reaper_close:
             return partial(select_enemy_reaper_by_distance, distance_level="close")
-        case ReaperActionTypes.ram_reaper_mid:
+        case ReaperActionTypes.ram_reaper_medium:
             return partial(select_enemy_reaper_by_distance, distance_level="medium")
         case ReaperActionTypes.ram_reaper_far:
             return partial(select_enemy_reaper_by_distance, distance_level="far")
         case ReaperActionTypes.ram_other_close:
             return partial(select_enemy_other_by_distance, distance_level="close")
-        case ReaperActionTypes.ram_other_mid:
+        case ReaperActionTypes.ram_other_medium:
             return partial(select_enemy_other_by_distance, distance_level="medium")
         case ReaperActionTypes.ram_other_far:
             return partial(select_enemy_other_by_distance, distance_level="far")

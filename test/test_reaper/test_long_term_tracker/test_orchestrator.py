@@ -1,6 +1,5 @@
-from python_prototypes.destroyer_simulation import Coordinate
-from python_prototypes.field_types import EntitiesForReaper, PlayerState
-from python_prototypes.real_game_mocks.player_and_wrecks_only import (
+from python_prototypes.field_types import EntitiesForReaper, PlayerState, Coordinate
+from test.real_game_mocks.player_and_wrecks_only import (
     ReaperAndWreckOnlyScenario,
 )
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state

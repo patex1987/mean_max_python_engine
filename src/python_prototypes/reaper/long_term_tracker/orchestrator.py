@@ -4,6 +4,7 @@ from python_prototypes.reaper.q_state_types import (
     MissionStep,
     ReaperActionsQWeights,
     get_default_reaper_actions_q_weights,
+    ReaperQState,
 )
 
 
@@ -29,14 +30,14 @@ class LongTermRewardTrackingOrchestrator:
         enemy_1_state: PlayerState,
         enemy_2_state: PlayerState,
         game_grid_information: GameGridInformation,
-    ):
+    ) -> dict[ReaperQState, ReaperActionsQWeights]:
         """
         return only the adjustments to the q table, but don't mutate the q table
 
         dict[q_state][goal_type] = +/- gain / loss
         TODO: if possible send something simpler instead of game_grid_information
         """
-        q_table_change = {}
+        q_table_change: dict[ReaperQState, ReaperActionsQWeights] = {}
         success_tracker_keys = list(self.success_trackers.keys())
         for tracker_id in success_tracker_keys:
             tracker = self.success_trackers[tracker_id]

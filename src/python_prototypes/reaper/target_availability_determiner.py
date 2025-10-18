@@ -42,13 +42,13 @@ def get_goal_target_determiner(
             return water_target_available
         case ReaperActionTypes.ram_reaper_close:
             return ram_target_obj_available
-        case ReaperActionTypes.ram_reaper_mid:
+        case ReaperActionTypes.ram_reaper_medium:
             return ram_target_obj_available
         case ReaperActionTypes.ram_reaper_far:
             return ram_target_obj_available
         case ReaperActionTypes.ram_other_close:
             return ram_target_obj_available
-        case ReaperActionTypes.ram_other_mid:
+        case ReaperActionTypes.ram_other_medium:
             return ram_target_obj_available
         case ReaperActionTypes.ram_other_far:
             return ram_target_obj_available

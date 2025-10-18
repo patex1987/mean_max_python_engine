@@ -35,6 +35,7 @@ class ReaperDecisionOutput:
     goal_action_type: ReaperActionTypes
     target_grid_unit: GridUnitState | None
 
+
 class ReaperDecider(Protocol):
 
     def decide(
@@ -43,8 +44,7 @@ class ReaperDecider(Protocol):
         reaper_q_state: ReaperQState,
         game_grid_information: GameGridInformation,
         player_state: PlayerState,
-    ) -> ReaperDecisionOutput:
-        ...
+    ) -> ReaperDecisionOutput: ...
 
 
 class MainReaperDecider(ReaperDecider):
@@ -141,7 +141,6 @@ class MainReaperDecider(ReaperDecider):
         if target_availability == TargetAvailabilityState.replan_reach:
             decision_type = ReaperDecisionType.replan_existing_target
         return ReaperDecisionOutput(decision_type, adjusted_goal_type, actual_target_grid_unit_state)
-
 
     def get_new_decision(
         self,

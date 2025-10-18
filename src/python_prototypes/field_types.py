@@ -128,3 +128,9 @@ class PlayerState:
             self.rage_gained = rage - prev_rage
         if prev_score:
             self.score_gained = score - prev_score
+
+
+class Coordinate:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y

@@ -30,13 +30,13 @@ def get_target_tracker(reaper_goal_type: ReaperActionTypes) -> "BaseTracker":
             return StaticTargetTracker()
         case ReaperActionTypes.ram_reaper_close:
             return DynamicTargetTracker()
-        case ReaperActionTypes.ram_reaper_mid:
+        case ReaperActionTypes.ram_reaper_medium:
             return DynamicTargetTracker()
         case ReaperActionTypes.ram_reaper_far:
             return DynamicTargetTracker()
         case ReaperActionTypes.ram_other_close:
             return DynamicTargetTracker()
-        case ReaperActionTypes.ram_other_mid:
+        case ReaperActionTypes.ram_other_medium:
             return DynamicTargetTracker()
         case ReaperActionTypes.ram_other_far:
             return DynamicTargetTracker()

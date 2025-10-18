@@ -5,7 +5,6 @@ TODO: these can be later moved to some sort of test suite (most probably conftes
 from collections import defaultdict
 from typing import Any
 
-from python_prototypes.destroyer_simulation import Coordinate
 from python_prototypes.field_tools import get_grid_position
 from python_prototypes.field_types import (
     Unit,
@@ -15,6 +14,7 @@ from python_prototypes.field_types import (
     GridUnitState,
     GameGridInformation,
     PlayerState,
+    Coordinate,
 )
 
 

@@ -11,13 +11,13 @@ def get_goal_possibility_determiner(current_goal: ReaperActionTypes):
             return dangerous_water_possible
         case ReaperActionTypes.ram_reaper_close:
             return close_reaper_possible
-        case ReaperActionTypes.ram_reaper_mid:
+        case ReaperActionTypes.ram_reaper_medium:
             return mid_reaper_possible
         case ReaperActionTypes.ram_reaper_far:
             return far_reaper_possible
         case ReaperActionTypes.ram_other_close:
             return close_other_enemy_possible
-        case ReaperActionTypes.ram_other_mid:
+        case ReaperActionTypes.ram_other_medium:
             return mid_other_enemy_possible
         case ReaperActionTypes.ram_other_far:
             return far_other_enemy_possible

@@ -180,10 +180,10 @@ class ReaperActionTypes(Enum):
     harvest_risky = 2
     harvest_dangerous = 3
     ram_reaper_close = 4
-    ram_reaper_mid = 5
+    ram_reaper_medium = 5
     ram_reaper_far = 6
     ram_other_close = 7
-    ram_other_mid = 8
+    ram_other_medium = 8
     ram_other_far = 9
     use_super_power = 10
     wait = 11
@@ -198,10 +198,10 @@ def get_default_reaper_actions_q_weights() -> dict[ReaperActionTypes, float]:
         ReaperActionTypes.harvest_risky: 0.0,
         ReaperActionTypes.harvest_dangerous: 0.0,
         ReaperActionTypes.ram_reaper_close: 0.0,
-        ReaperActionTypes.ram_reaper_mid: 0.0,
+        ReaperActionTypes.ram_reaper_medium: 0.0,
         ReaperActionTypes.ram_reaper_far: 0.0,
         ReaperActionTypes.ram_other_close: 0.0,
-        ReaperActionTypes.ram_other_mid: 0.0,
+        ReaperActionTypes.ram_other_medium: 0.0,
         ReaperActionTypes.ram_other_far: 0.0,
         ReaperActionTypes.use_super_power: 0.0,
         ReaperActionTypes.wait: 0.0,

@@ -17,7 +17,7 @@ def get_success_long_term_tracker(
     o
         :param original_target:
         :param original_mission_steps:
-        :param latest_gal_type:
+        :param latest_goal_type:
         :return:
     """
     match latest_goal_type:
@@ -30,7 +30,7 @@ def get_success_long_term_tracker(
 
         case ReaperActionTypes.ram_reaper_close:
             return RamReaperSuccessTracker(original_reaper_target=original_target)
-        case ReaperActionTypes.ram_reaper_mid:
+        case ReaperActionTypes.ram_reaper_medium:
             return RamReaperSuccessTracker(original_reaper_target=original_target)
         case ReaperActionTypes.ram_reaper_far:
             return RamReaperSuccessTracker(original_reaper_target=original_target)
@@ -48,9 +48,9 @@ def get_success_long_term_tracker(
             #         - How? need to detect appearance of new oil pools. Correlate the new oil pool's position to the enemy's doof. Close means it was created by that doof
             #         - then, check the manhattan distance between that oil pool and your reaper. If their distance is 0, check the real distance. If you detect that its affected, means the long term success tracker failed, and you failed the mission. Most probably you need to backpropagate some failure
             #         - if the oil pool affected some other entity of yours, expire the long term success tracker, and apply a smaller loss then in the case of the reaper
-        #   #     - if none of the above happened apply some gain (but this must be smaller than the water reward or the ram reaper reward)
+            #   #     - if none of the above happened apply some gain (but this must be smaller than the water reward or the ram reaper reward)
             pass
-        case ReaperActionTypes.ram_other_mid:
+        case ReaperActionTypes.ram_other_medium:
             pass
         case ReaperActionTypes.ram_other_far:
             pass
@@ -88,7 +88,7 @@ def get_failure_long_term_tracker(
             # - did the enemy gain water?
             #     - if yes, did the selected reaper gained some water (the above check should be enough, as only the reaper can gain water)
             pass
-        case ReaperActionTypes.ram_reaper_mid:
+        case ReaperActionTypes.ram_reaper_medium:
             pass
         case ReaperActionTypes.ram_reaper_far:
             pass
@@ -103,7 +103,7 @@ def get_failure_long_term_tracker(
             #           - target was destroyer
             #               - did it destroy a tanker
             pass
-        case ReaperActionTypes.ram_other_mid:
+        case ReaperActionTypes.ram_other_medium:
             pass
         case ReaperActionTypes.ram_other_far:
             pass

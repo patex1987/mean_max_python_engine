@@ -4,11 +4,13 @@ Main entrypoint is the `genetic_algorithm` function
 """
 
 import random
+import sys
 
 import time
 from dataclasses import dataclass
 from typing import Tuple
 
+TIMEOUT_25_MS = 25
 TIMEOUT_1000_MS = 1000
 # TODO: create a custom type
 FITNESS_SCORE_TYPE = Tuple[float, float, float, int]
@@ -82,7 +84,7 @@ class GeneticConfiguration:
     speed_weight: float = 0.5
     length_weight: float = 0.01
     nonzero_weight: float = 0.01
-    timeout_ms: int = TIMEOUT_1000_MS
+    timeout_ms: int = TIMEOUT_25_MS
 
 
 def find_optimal_throttle_sequence(
@@ -173,7 +175,7 @@ def find_optimal_throttle_sequence(
         population = next_generation
         actual_time = time.monotonic_ns() / 1e6  # Current time in milliseconds
         if actual_time - start_time >= genetic_configration.timeout_ms:
-            print("Timeout reached after {} generations".format(generation + 1))
+            print("Timeout reached after {} generations".format(generation + 1), file=sys.stderr, flush=True)
             return ThrottleSequenceGeneticResult(best_throttle_sequence, best_fitness)
 
     return ThrottleSequenceGeneticResult(best_throttle_sequence, best_fitness)
@@ -340,57 +342,3 @@ def get_distance_for_throttles_velocities(v0, m, f, throttles, start_position):
         distance_velocities.append((distance, actual_velocity))
 
     return distance_velocities
-
-
-if __name__ == "__main__":
-    pass
-    # # Example usage
-    # v0 = 0.0  # initial speed
-    # m = 0.5  # mass of the vehicle
-    # f = 0.2  # friction factor
-    # d_target = 5_371  # target distance
-    # speed_threshold = 7  # final velocity should be less than this
-    # max_sequence_length = 50  # maximum allowed throttle length
-    # throttle_range = (0, 300)  # throttle values to try
-    # population_size = 10_000  # population size
-    # num_generations = 300  # number of generations
-    # mutation_rate = 0.1  # mutation rate
-    # num_best_parents = 20  # number of parents to select
-    # num_worst_parents = 10  # number of parents to select
-    #
-    # # Adjust weights to focus on distance, speed, and length
-    # w1 = 0.5  # Distance error weight
-    # w2 = 0.01  # Final speed weight
-    # w3 = 0.5  # Length weight
-    # nonzero_weight = 0.1  # Non-zero throttle weight
-    #
-    # throttle_game_input = ThrottleCalculationInput(v0, m, f, d_target)
-    #
-    # throttle_sequence_result = find_optimal_throttle_sequence(
-    #     throttle_game_input,
-    #     speed_threshold,
-    #     max_sequence_length,
-    #     throttle_range,
-    #     population_size,
-    #     num_generations,
-    #     mutation_rate,
-    #     num_best_parents,
-    #     num_worst_parents,
-    #     w1,
-    #     w2,
-    #     w3,
-    #     nonzero_weight,
-    # )
-    #
-    # # print(f"Best throttle sequence: {sorted(best_throttles)}")
-    # print(f"Best throttle sequence (non sorted): {throttle_sequence_result.sequence}")
-    # print(f"Best fitness: {throttle_sequence_result.fitness_score}")
-    # if throttle_sequence_result.sequence:
-    #     print(f"Length of best throttle sequence: {len(throttle_sequence_result.sequence)}")
-    #
-    # positions = get_distance_for_throttles_velocities(v0, m, f, throttle_sequence_result.sequence, 0)
-    # print(f"positions for the best throttle (non sorted): {positions}")
-    #
-    # # sorted_best_throttles = sorted(best_throttles, reverse=True)
-    # # sorted_positions = get_distance_for_throttles_velocities(v0, m, f, sorted_best_throttles, 0)
-    # # print(f"positions for the best throttle (sorted): {sorted_positions}")

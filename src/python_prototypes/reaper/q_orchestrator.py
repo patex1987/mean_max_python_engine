@@ -17,6 +17,7 @@ from python_prototypes.reaper.goal_possibility_determiner import (
 from python_prototypes.reaper.long_term_tracker.orchestrator import (
     LongTermRewardTrackingOrchestrator,
 )
+from python_prototypes.reaper.path_planner import StrategyPath
 from python_prototypes.reaper.q_state_types import (
     ReaperQState,
     get_default_reaper_actions_q_weights,
@@ -68,9 +69,12 @@ class ReaperGameState:
 
         self.target_tracker: BaseTracker | None = None
 
-        self._planned_game_output_path: list[str] | None = None
+        # TODO: currently we are storing only the throttles, but store the commands on the long run
+        self._planned_game_output_path: StrategyPath | None = None
 
-        self.long_term_reward_tracking_orchestrator = LongTermRewardTrackingOrchestrator()
+        self.long_term_reward_tracking_orchestrator: LongTermRewardTrackingOrchestrator = (
+            LongTermRewardTrackingOrchestrator()
+        )
 
     @property
     def current_goal_type(self) -> ReaperActionTypes | None:
@@ -296,7 +300,7 @@ def get_updated_goal_type(
             harvest_category = ReaperActionTypes[harvest_category_name]
             return harvest_category
 
-        case ReaperActionTypes.ram_reaper_close | ReaperActionTypes.ram_reaper_mid | ReaperActionTypes.ram_reaper_far:
+        case ReaperActionTypes.ram_reaper_close | ReaperActionTypes.ram_reaper_medium | ReaperActionTypes.ram_reaper_far:
             if target_id not in reaper_q_state.reaper_id_category_relation:
                 return None
             updated_enemy_other_category = reaper_q_state.reaper_id_category_relation[target_id]
@@ -305,7 +309,7 @@ def get_updated_goal_type(
             ram_category = ReaperActionTypes[ram_reaper_category_name]
             return ram_category
 
-        case ReaperActionTypes.ram_other_close | ReaperActionTypes.ram_other_mid | ReaperActionTypes.ram_other_far:
+        case ReaperActionTypes.ram_other_close | ReaperActionTypes.ram_other_medium | ReaperActionTypes.ram_other_far:
             if target_id not in reaper_q_state.other_id_category_mapping:
                 return None
             updated_enemy_other_category = reaper_q_state.other_id_category_mapping[target_id]

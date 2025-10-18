@@ -5,7 +5,7 @@ from python_prototypes.reaper.q_state_types import ReaperActionTypes
 from python_prototypes.throttle_optimization import (
     find_optimal_throttle_sequence,
     ThrottleCalculationInput,
-    GeneticConfiguration,
+    GeneticConfiguration, TIMEOUT_25_MS,
 )
 
 REAPER_GOAL_ROUND_LIMIT = 12
@@ -22,7 +22,7 @@ REAPER_FAST_PATH_CONFIGURATION = GeneticConfiguration(
     speed_weight=0.001,
     length_weight=0.001,
     nonzero_weight=0.001,
-    timeout_ms=300,
+    timeout_ms=TIMEOUT_25_MS,
 )
 REAPER_BEST_PATH_CONFIGURATION = GeneticConfiguration(
     speed_threshold=3,
@@ -37,7 +37,7 @@ REAPER_BEST_PATH_CONFIGURATION = GeneticConfiguration(
     speed_weight=0.6,
     length_weight=0.3,
     nonzero_weight=0.3,
-    timeout_ms=300,
+    timeout_ms=TIMEOUT_25_MS,
 )
 
 
@@ -65,13 +65,13 @@ def get_reaper_planner(goal_action_type: ReaperActionTypes) -> "BaseReaperPathPl
             return GeneticStraightPathPlanner(REAPER_BEST_PATH_CONFIGURATION)
         case ReaperActionTypes.ram_reaper_close:
             return GeneticStraightPathPlanner(REAPER_FAST_PATH_CONFIGURATION)
-        case ReaperActionTypes.ram_reaper_mid:
+        case ReaperActionTypes.ram_reaper_medium:
             return GeneticStraightPathPlanner(REAPER_FAST_PATH_CONFIGURATION)
         case ReaperActionTypes.ram_reaper_far:
             return GeneticStraightPathPlanner(REAPER_FAST_PATH_CONFIGURATION)
         case ReaperActionTypes.ram_other_close:
             return GeneticStraightPathPlanner(REAPER_FAST_PATH_CONFIGURATION)
-        case ReaperActionTypes.ram_other_mid:
+        case ReaperActionTypes.ram_other_medium:
             return GeneticStraightPathPlanner(REAPER_FAST_PATH_CONFIGURATION)
         case ReaperActionTypes.ram_other_far:
             return GeneticStraightPathPlanner(REAPER_FAST_PATH_CONFIGURATION)
@@ -99,5 +99,7 @@ class GeneticStraightPathPlanner(BaseReaperPathPlanner):
         self.genetic_configuration = genetic_configuration
 
     def get_path(self, throttle_game_input: ThrottleCalculationInput) -> StrategyPath:
-        sequence_result = find_optimal_throttle_sequence(throttle_calculation_input=throttle_game_input)
+        sequence_result = find_optimal_throttle_sequence(
+            throttle_calculation_input=throttle_game_input, genetic_configration=self.genetic_configuration
+        )
         return StrategyPath(sequence_result.sequence)
