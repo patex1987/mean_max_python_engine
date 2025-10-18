@@ -77,11 +77,12 @@ class DefaultReaperSrategyPathDecider:
                         original_target, original_mission_steps, latest_goal_type
                     )
                     reaper_game_state.long_term_reward_tracking_orchestrator.register_success_tracker(long_term_tracker)
-                if reaper_decision.decision_type == ReaperDecisionType.new_target_on_failure:
-                    long_term_tracker = get_failure_long_term_tracker(
-                        original_target, original_mission_steps, latest_goal_type
-                    )
-                    reaper_game_state.long_term_reward_tracking_orchestrator.register_failure_tracker(long_term_tracker)
+                # TODO: disabling temporarily as its not implemented yet
+                # if reaper_decision.decision_type == ReaperDecisionType.new_target_on_failure:
+                #     long_term_tracker = get_failure_long_term_tracker(
+                #         original_target, original_mission_steps, latest_goal_type
+                #     )
+                #     reaper_game_state.long_term_reward_tracking_orchestrator.register_failure_tracker(long_term_tracker)
 
                 # TODO: not sure if doing this is fully correct
                 if not reaper_decision.target_grid_unit:

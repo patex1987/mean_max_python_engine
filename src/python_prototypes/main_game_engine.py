@@ -24,6 +24,8 @@ class MainGameEngine:
         reaper_game_state: ReaperGameState,
         reaper_strategy_path_decider: Type[DefaultReaperSrategyPathDecider] = DefaultReaperSrategyPathDecider,
     ):
+        self._round_nr = 0
+        self._q_table_reported = False
         self.reaper_game_state = reaper_game_state
         self.reaper_strategy_path_decider = reaper_strategy_path_decider
         self.player_prev_score = None
@@ -130,6 +132,14 @@ class MainGameEngine:
         self.enemy_2_prev_score = enemy_2_score
         self.enemy_2_prev_rage = enemy_2_rage
 
+        # TODO: takes too much time
+        # if not self._q_table_reported and (self._round_nr == 190 or enemy_1_score > 40 or my_score > 40 or enemy_2_score > 40):
+        #     self._q_table_reported = True
+        #     for q_state, weights in self.reaper_game_state._q_table.items():
+        #         print(f"Q table elem: {q_state}\n\t{weights}", file=sys.stderr, flush=True)
+        #
+
+        self._round_nr += 1
         return round_command
 
     def run_round(
@@ -154,7 +164,11 @@ class MainGameEngine:
             player_state=player_state,
         )
 
-        print(f"[MAIN] reaper decision: {reaper_decision.decision_type}, {reaper_decision.goal_action_type}", file=sys.stderr, flush=True)
+        print(
+            f"[MAIN] reaper decision: {reaper_decision.decision_type}, {reaper_decision.goal_action_type}, {reaper_decision.target_grid_unit.unit.unit_id}",
+            file=sys.stderr,
+            flush=True,
+        )
 
         strategy_path = self.reaper_strategy_path_decider.reaper_get_strategy_path(
             original_mission_steps=original_mission_steps,

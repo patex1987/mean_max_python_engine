@@ -5,7 +5,8 @@ from python_prototypes.reaper.q_state_types import ReaperActionTypes
 from python_prototypes.throttle_optimization import (
     find_optimal_throttle_sequence,
     ThrottleCalculationInput,
-    GeneticConfiguration, TIMEOUT_25_MS,
+    GeneticConfiguration,
+    TIMEOUT_25_MS,
 )
 
 REAPER_GOAL_ROUND_LIMIT = 12
@@ -37,7 +38,7 @@ REAPER_BEST_PATH_CONFIGURATION = GeneticConfiguration(
     speed_weight=0.6,
     length_weight=0.3,
     nonzero_weight=0.3,
-    timeout_ms=TIMEOUT_25_MS,
+    timeout_ms=TIMEOUT_25_MS
 )
 
 
@@ -76,9 +77,9 @@ def get_reaper_planner(goal_action_type: ReaperActionTypes) -> "BaseReaperPathPl
         case ReaperActionTypes.ram_other_far:
             return GeneticStraightPathPlanner(REAPER_FAST_PATH_CONFIGURATION)
         case ReaperActionTypes.use_super_power:
-            return StrategyPath([0])
+            return NoOpPlanner()
         case ReaperActionTypes.wait:
-            return StrategyPath([0])
+            return NoOpPlanner()
         case ReaperActionTypes.move_tanker_safe:
             return GeneticStraightPathPlanner(REAPER_FAST_PATH_CONFIGURATION)
         case ReaperActionTypes.move_tanker_risky:
@@ -103,3 +104,7 @@ class GeneticStraightPathPlanner(BaseReaperPathPlanner):
             throttle_calculation_input=throttle_game_input, genetic_configration=self.genetic_configuration
         )
         return StrategyPath(sequence_result.sequence)
+
+class NoOpPlanner(BaseReaperPathPlanner):
+    def get_path(self, throttle_game_input: ThrottleCalculationInput) -> StrategyPath:
+        return StrategyPath([0])

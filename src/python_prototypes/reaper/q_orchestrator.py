@@ -300,7 +300,9 @@ def get_updated_goal_type(
             harvest_category = ReaperActionTypes[harvest_category_name]
             return harvest_category
 
-        case ReaperActionTypes.ram_reaper_close | ReaperActionTypes.ram_reaper_medium | ReaperActionTypes.ram_reaper_far:
+        case (
+            ReaperActionTypes.ram_reaper_close | ReaperActionTypes.ram_reaper_medium | ReaperActionTypes.ram_reaper_far
+        ):
             if target_id not in reaper_q_state.reaper_id_category_relation:
                 return None
             updated_enemy_other_category = reaper_q_state.reaper_id_category_relation[target_id]

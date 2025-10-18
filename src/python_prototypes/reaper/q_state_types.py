@@ -82,13 +82,13 @@ class ReaperQState:
             self.super_power_available,
         )
         """
-        non_null_water_reaper_relation = {key: val for key, val in self.water_reaper_relation.items() if val}
-        non_null_water_other_relation = {key: val for key, val in self.water_other_relation.items() if val}
-        non_null_tanker_enemy_relation = {key: val for key, val in self.tanker_enemy_relation.items() if val}
-        non_null_player_reaper_relation = {key: val for key, val in self.player_reaper_relation.items() if val}
-        non_null_player_other_relation = {key: val for key, val in self.player_other_relation.items() if val}
+        non_null_water_reaper_relation = {key: 1 for key, val in self.water_reaper_relation.items() if val}
+        non_null_water_other_relation = {key: 1 for key, val in self.water_other_relation.items() if val}
+        non_null_tanker_enemy_relation = {key: 1 for key, val in self.tanker_enemy_relation.items() if val}
+        non_null_player_reaper_relation = {key: 1 for key, val in self.player_reaper_relation.items() if val}
+        non_null_player_other_relation = {key: 1 for key, val in self.player_other_relation.items() if val}
 
-        return "ReaperQState(water_reaper_relation={0}, water_other_relation={1}, tanker_enemy_relation={2}, player_reaper_relation={3}, player_other_relation={4}, super_power_available={5})".format(
+        return "ReaperQState(\nwater_reaper_relation={0},\nwater_other_relation={1},\ntanker_enemy_relation={2},\nplayer_reaper_relation={3},\nplayer_other_relation={4},\nsuper_power_available={5}\n)".format(
             non_null_water_reaper_relation,
             non_null_water_other_relation,
             non_null_tanker_enemy_relation,
@@ -113,7 +113,8 @@ class ReaperActionsQWeights:
         return sorted_weights
 
     def __repr__(self):
-        return "ReaperActionsQWeights({0})".format(self.inner_weigths_dict)
+        filtered_inner_weights = {key: val for key, val in self.inner_weigths_dict.items() if val!=0.0}
+        return "ReaperActionsQWeights({0})".format(filtered_inner_weights)
 
 
 def get_default_water_relations() -> dict[tuple[str, str], list[Any]]:
