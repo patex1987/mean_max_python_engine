@@ -11,7 +11,7 @@ from python_prototypes.field_types import (
 from python_prototypes.real_game_mocks.full_grid_state import (
     ExampleBasicScenarioIncomplete,
 )
-from python_prototypes.reaper.decision_maker import reaper_decider, ReaperDecisionType
+from python_prototypes.reaper.decision_maker import MainReaperDecider, ReaperDecisionType
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
 from python_prototypes.reaper.q_orchestrator import (
     ReaperGameState,
@@ -62,7 +62,8 @@ class TestReaperDecider:
         )
         reaper_game_state = ReaperGameState()
         reaper_game_state.exploration_rate = 0.0
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
@@ -86,7 +87,8 @@ class TestReaperDecider:
 
         reaper_game_state = ReaperGameState()
         reaper_game_state.exploration_rate = 0.0
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
@@ -124,7 +126,8 @@ class TestReaperDecider:
         reaper_game_state.target_tracker = tracker
         assert reaper_game_state.current_goal_type == ReaperActionTypes.harvest_safe
 
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
@@ -160,7 +163,8 @@ class TestReaperDecider:
         reaper_game_state.target_tracker = tracker
         reaper_game_state.target_tracker.track(player_state.reaper_state, None)
 
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
@@ -224,7 +228,8 @@ class TestReaperDecider:
         reaper_game_state.target_tracker = tracker
         reaper_game_state.target_tracker.track(player_state.reaper_state, target_unit)
 
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
@@ -277,7 +282,8 @@ class TestReaperDecider:
         reaper_game_state = FakeReaperGameState()
 
         # first round
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state_round_1,
             game_grid_information=game_grid_information,
@@ -312,7 +318,8 @@ class TestReaperDecider:
             player_state=player_state,
         )
 
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state_round_2,
             game_grid_information=game_grid_information,
@@ -367,7 +374,8 @@ class TestReaperDecider:
         reaper_game_state = FakeReaperGameState()
 
         # first round
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state_round_1,
             game_grid_information=game_grid_information,
@@ -412,7 +420,8 @@ class TestReaperDecider:
             player_state=player_state,
         )
 
-        decision_output = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        decision_output = reaper_decider.decide(
             reaper_game_state=reaper_game_state,
             reaper_q_state=reaper_q_state_round_2,
             game_grid_information=game_grid_information,

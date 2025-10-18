@@ -12,6 +12,7 @@ from python_prototypes.reaper.q_state_types import ReaperQState, ReaperActionTyp
 class SelectedTargetInformation:
     id: int
     type: EntitiesForReaper
+    player_id: int | None = None  # player the target belongs to, this field is set later
 
 
 def get_target_id_selector(

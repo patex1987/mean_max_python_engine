@@ -8,7 +8,7 @@ from python_prototypes.field_types import (
     Entity,
     PlayerFieldTypes,
 )
-from python_prototypes.reaper.decision_maker import reaper_decider
+from python_prototypes.reaper.decision_maker import MainReaperDecider
 from python_prototypes.reaper.input_to_q_state import calculate_reaper_q_state
 from python_prototypes.reaper.q_orchestrator import ReaperGameState
 from python_prototypes.reaper.strategy_path_decider import (
@@ -70,6 +70,7 @@ class MainGameEngine:
         :param tanker_id_to_grid_coord:
         :param wreck_grid_state:
         :param wreck_id_to_grid_coord:
+        :param enemy_id_to_entities:
         :param enemy_1_score:
         :param enemy_2_score:
         :param enemy_1_rage:
@@ -141,9 +142,8 @@ class MainGameEngine:
         original_mission_steps = self.reaper_game_state._mission_steps
         latest_goal_type = self.reaper_game_state.current_goal_type
 
-        # TODO: make reaper_decider oop based and add it as a class field,
-        #   so you can inject a different implementation in your test
-        reaper_decision = reaper_decider(
+        reaper_decider = MainReaperDecider()
+        reaper_decision = reaper_decider.decide(
             reaper_game_state=self.reaper_game_state,
             reaper_q_state=reaper_q_state,
             game_grid_information=game_grid_information,
