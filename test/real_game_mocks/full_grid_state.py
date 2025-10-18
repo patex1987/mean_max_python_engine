@@ -156,6 +156,8 @@ class ExampleBasicScenarioIncomplete:
             enemy_reaper_id_to_grid_coord=enemy_reaper_id_to_grid_coord,
             enemy_others_grid_state=enemy_others_grid_state,
             enemy_others_id_to_grid_coord=enemy_others_id_to_grid_coord,
+            oil_pool_grid_state={},
+            oil_pool_id_to_grid_coord={},
         )
 
         return game_grid_information

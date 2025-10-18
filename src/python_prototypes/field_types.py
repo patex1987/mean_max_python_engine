@@ -92,6 +92,8 @@ class GameGridInformation:
     enemy_reaper_id_to_grid_coord: dict[int, tuple[int, int]]
     enemy_others_grid_state: GRID_COORD_UNIT_STATE_T
     enemy_others_id_to_grid_coord: dict[int, tuple[int, int]]
+    oil_pool_grid_state: GRID_COORD_UNIT_STATE_T
+    oil_pool_id_to_grid_coord: dict[int, tuple[int, int]]
 
 
 @dataclass
@@ -108,6 +110,7 @@ class PlayerState:
     score: int
     rage_gained: int = 0
     score_gained: int = 0
+    oil_pool_tracker: OilPoolTracker = field(default_factory=OilPoolTracker)
 
     def __init__(
         self,

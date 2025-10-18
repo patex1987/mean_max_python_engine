@@ -34,6 +34,7 @@ class MainGameEngine:
         self.enemy_1_prev_rage = None
         self.enemy_2_prev_score = None
         self.enemy_2_prev_rage = None
+        self.previous_oil_pool_id_to_grid: dict[int, tuple[int, int]] = {}
 
     def run_round_raw(
         self,
@@ -56,6 +57,8 @@ class MainGameEngine:
         enemy_2_score: int,
         enemy_1_rage: int,
         enemy_2_rage: int,
+        oil_pool_grid_state: GRID_COORD_UNIT_STATE_T,
+        oil_pool_id_to_grid_coord: dict[int, tuple[int, int]],
     ) -> 'GameRoundCommand':
         """
         Handles the raw data incoming rom every round in the game
@@ -79,6 +82,8 @@ class MainGameEngine:
         :param enemy_2_score:
         :param enemy_1_rage:
         :param enemy_2_rage:
+        :param oil_pool_grid_state:
+        :param oil_pool_id_to_grid_coord:
         :return:
 
         TODO: use the enemy score and rage values similarly to player state
@@ -93,7 +98,17 @@ class MainGameEngine:
             enemy_reaper_id_to_grid_coord=enemy_reaper_id_to_grid_coord,
             enemy_others_grid_state=enemy_others_grid_state,
             enemy_others_id_to_grid_coord=enemy_others_id_to_grid_coord,
+            oil_pool_grid_state=oil_pool_grid_state,
+            oil_pool_id_to_grid_coord=oil_pool_id_to_grid_coord,
         )
+
+        # TODO: add the oil pools to the playerstate's, they should have an oil pool tracker as well
+        # if self.previous_oil_pool_id_to_grid:
+        #     new_oil_pools = determine_new_oil_pools(
+        #         game_grid_information.oil_pool_id_to_grid_coord, self.previous_oil_pool_id_to_grid
+        #     )
+        #     correlated_oil_pool_to_doofs
+
         player_state = PlayerState(
             reaper_state=player_reaper_grid_unit,
             destroyer_state=player_destroyer_grid_unit,
@@ -131,6 +146,7 @@ class MainGameEngine:
         self.enemy_1_prev_rage = enemy_1_rage
         self.enemy_2_prev_score = enemy_2_score
         self.enemy_2_prev_rage = enemy_2_rage
+        self.previous_oil_pool_id_to_grid = oil_pool_id_to_grid_coord
 
         # TODO: takes too much time
         # if not self._q_table_reported and (self._round_nr == 190 or enemy_1_score > 40 or my_score > 40 or enemy_2_score > 40):
@@ -149,6 +165,7 @@ class MainGameEngine:
         enemy_1_state: PlayerState,
         enemy_2_state: PlayerState,
     ) -> 'GameRoundCommand':
+
         reaper_q_state = calculate_reaper_q_state(
             game_grid_information=game_grid_information, player_state=player_state
         )
@@ -163,14 +180,13 @@ class MainGameEngine:
             game_grid_information=game_grid_information,
             player_state=player_state,
         )
-
         print(
             f"[MAIN] reaper decision: {reaper_decision.decision_type}, {reaper_decision.goal_action_type}, {reaper_decision.target_grid_unit.unit.unit_id}",
             file=sys.stderr,
             flush=True,
         )
 
-        strategy_path = self.reaper_strategy_path_decider.reaper_get_strategy_path(
+        reaper_strategy_path = self.reaper_strategy_path_decider.reaper_get_strategy_path(
             original_mission_steps=original_mission_steps,
             original_target=original_target,
             latest_goal_type=latest_goal_type,
@@ -190,9 +206,9 @@ class MainGameEngine:
         self.reaper_game_state._q_table.update(q_table_changes)
 
         reaper_command = "WAIT"
-        reaper_next_throttle = strategy_path.get_next_step()
+        reaper_next_throttle = reaper_strategy_path.get_next_step()
         # TODO: we need a bit more advanced storage and we need to store the full commands not just the throttles
-        self.reaper_game_state._planned_game_output_path = strategy_path
+        self.reaper_game_state._planned_game_output_path = reaper_strategy_path
 
         if reaper_next_throttle:
             x, y = reaper_decision.target_grid_unit.unit.x, reaper_decision.target_grid_unit.unit.y

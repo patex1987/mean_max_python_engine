@@ -37,17 +37,19 @@ def original_game_main():
 
         full_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
         wreck_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
-        wreck_id_to_grid_coord: dict[Any, tuple[int, int]] = {}
+        wreck_id_to_grid_coord: dict[int, tuple[int, int]] = {}
         tanker_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
-        tanker_id_to_grid_coord: dict[Any, tuple[int, int]] = {}
+        tanker_id_to_grid_coord: dict[int, tuple[int, int]] = {}
         enemy_reaper_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
-        enemy_reaper_id_to_grid_coord: dict[Any, tuple[int, int]] = {}
+        enemy_reaper_id_to_grid_coord: dict[int, tuple[int, int]] = {}
         enemy_others_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
-        enemy_others_id_to_grid_coord: dict[Any, tuple[int, int]] = {}
+        enemy_others_id_to_grid_coord: dict[int, tuple[int, int]] = {}
         player_reaper_grid_unit: GridUnitState | None = None
         player_destroyer_grid_unit: GridUnitState | None = None
         player_doof_grid_unit: GridUnitState | None = None
         enemy_id_to_entities: dict[int, dict[Entity, GridUnitState]] = defaultdict(dict)
+        oil_pool_grid_state: GRID_COORD_UNIT_STATE_T = defaultdict(list)
+        oil_pool_id_to_grid_coord: dict[int, tuple[int, int]] = {}
 
         for i in range(unit_count):
             inputs = input().split()
@@ -107,6 +109,10 @@ def original_game_main():
                 enemy_id_to_entities[player][Entity(unit_type)] = grid_unit
                 continue
 
+            if unit_type == Entity.OIL_POOL.value:
+                oil_pool_grid_state[grid_coordinate].append(grid_unit)
+                oil_pool_id_to_grid_coord[unit_id] = grid_coordinate
+
             if unit_type == Entity.REAPER.value and player == PlayerFieldTypes.PLAYER.value:
                 player_reaper_grid_unit = grid_unit
 
@@ -138,6 +144,8 @@ def original_game_main():
             enemy_2_score,
             enemy_1_rage,
             enemy_2_rage,
+            oil_pool_grid_state,
+            oil_pool_id_to_grid_coord,
         )
 
         print(round_command.reaper_command)
